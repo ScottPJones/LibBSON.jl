@@ -38,4 +38,13 @@ facts("BSON") do
         @fact_throws BSON("invalid JSON")
         @fact string(BSON("{\"pi\": 3.141}")) => "{ \"pi\" : 3.141000 }"
     end
+
+    context("BSON containing BSON") do
+        subBSON = BSON()
+        append(subBSON, "key", "value")
+        bson = BSON()
+        append(bson, "sub", subBSON)
+        @fact string(bson) => "{ \"sub\" : { \"key\" : \"value\" } }"
+        @fact string(bson["sub"]) => "{ \"key\" : \"value\" }"
+    end
 end

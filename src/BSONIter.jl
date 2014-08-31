@@ -130,6 +130,15 @@ function value(bsonIter::BSONIter)
             Ptr{Void}, (Ptr{Uint8},),
             bsonIter._wrap_
             ))
+    elseif ty == BSON_TYPE_DOCUMENT
+        length = Array(Uint32, 1)
+        data = Array(Ptr{Uint8}, 1)
+        ccall(
+            (:bson_iter_document, BSON_LIB),
+            Ptr{Void}, (Ptr{Uint8}, Ptr{Uint32}, Ptr{Ptr{Uint8}}),
+            bsonIter._wrap_, length, data
+            )
+        return BSON(data[1], length[1])
     else
         error("unhandled BSONType $ty")
     end
