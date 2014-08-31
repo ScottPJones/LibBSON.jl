@@ -14,5 +14,6 @@ import Base.hash, Base.convert, Base.show, Base.error
 include("BSONOID.jl")
 include("BSONError.jl")
 include("BSON.jl")
+include("BSONIter.jl")
 
 end
