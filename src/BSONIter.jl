@@ -17,8 +17,34 @@ type BSONIter
             )
         return bsonIter
     end
+
+    function BSONIter(bson::BSON, key)
+        bsonIter = new(Array(Uint8, 128), false)
+        ccall(
+            (:bson_iter_init, BSON_LIB),
+            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            bsonIter._wrap_,
+            bson._wrap_
+            ) || error("BSONIter(): failure")
+        keyCStr = bytestring(key)
+        bsonIter.done = !ccall(
+            (:bson_iter_find, BSON_LIB),
+            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            bsonIter._wrap_,
+            keyCStr
+            )
+        return bsonIter
+    end
 end
 export BSONIter
+
+# Index
+
+Base.getindex(bson::BSON, key) = begin
+    bsonIter = BSONIter(bson, key)
+    bsonIter.done && error("key not found: $(repr(key))")
+    value(bsonIter)
+end
 
 # Iterator
 
@@ -98,8 +124,14 @@ function value(bsonIter::BSONIter)
             bsonIter._wrap_,
             C_NULL
             )))
+    elseif ty == BSON_TYPE_OID
+        return BSONOID(ccall(
+            (:bson_iter_oid, BSON_LIB),
+            Ptr{Void}, (Ptr{Uint8},),
+            bsonIter._wrap_
+            ))
     else
-        error("unhandle BSONType $ty")
+        error("unhandled BSONType $ty")
     end
 end
 

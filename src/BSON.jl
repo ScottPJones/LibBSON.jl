@@ -168,6 +168,10 @@ function append_maxkey(bson::BSON, key::String)
 end
 export append_maxkey
 
+Base.getindex(bson::BSON, key) = begin
+    bsonIter = new(Array(Uint8, 128), false)
+end
+
 # Private
 
 function destroy(bson::BSON)

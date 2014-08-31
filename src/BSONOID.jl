@@ -1,18 +1,18 @@
 immutable BSONOID
-    _wrap_::Vector{Uint8}
+    _wrap_::Ptr{Void}
 
-    function BSONOID()
-        oid = new(Array(Uint8, 12))
+    BSONOID() = begin
+        buffer = Array(Uint8, 12)
         ccall(
             (:bson_oid_init, BSON_LIB),
             Void, (Ptr{Uint8}, Ptr{Void}),
-            oid._wrap_,
+            buffer,
             C_NULL
             )
-        return oid           
+        new(buffer)
     end
 
-    function BSONOID(str::String)
+    BSONOID(str::String) = begin
         cstr = bytestring(str)
 
         isValid = ccall(
@@ -23,30 +23,35 @@ immutable BSONOID
             )
         isValid || error("'" * str * "': not a valid BSONOID string")
 
-        oid = new(Array(Uint8, 12))
+        buffer = Array(Uint8, 12)
         ccall(
             (:bson_oid_init_from_string, BSON_LIB),
             Void, (Ptr{Uint8}, Ptr{Uint8}),
-            oid._wrap_,
+            buffer,
             cstr
             )
-        return oid           
+        new(buffer)
     end
+
+    BSONOID(_wrap_::Ptr{Void}) = new(_wrap_)
 end
 export BSONOID
 
-==(lhs::BSONOID, rhs::BSONOID) = (lhs._wrap_ == rhs._wrap_)
+==(lhs::BSONOID, rhs::BSONOID) = ccall(
+    (:bson_oid_equal, BSON_LIB),
+    Bool, (Ptr{Void}, Ptr{Void}),
+    lhs._wrap_, rhs._wrap_
+    )
 export ==
 
-import Base.hash, Base.convert
-function hash(oid::BSONOID, h::Uint)
-    oidHash = ccall(
+hash(oid::BSONOID, h::Uint) = hash(
+    ccall(
         (:bson_oid_hash, BSON_LIB),
         Uint32, (Ptr{Uint8},),
         oid._wrap_
-        )
-    return hash(oidHash, h)
-end
+        ),
+    h
+    )
 export hash
 
 function convert(::Type{String}, oid::BSONOID)
