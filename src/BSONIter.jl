@@ -67,6 +67,37 @@ function value(bsonIter::BSONIter)
             Cdouble, (Ptr{Uint8}, ),
             bsonIter._wrap_
             )
+    elseif ty == BSON_TYPE_INT32
+        return ccall(
+            (:bson_iter_int32, BSON_LIB),
+            Int32, (Ptr{Uint8}, ),
+            bsonIter._wrap_
+            )
+    elseif ty == BSON_TYPE_INT64
+        return ccall(
+            (:bson_iter_int64, BSON_LIB),
+            Int64, (Ptr{Uint8}, ),
+            bsonIter._wrap_
+            )
+    elseif ty == BSON_TYPE_BOOL
+        return ccall(
+            (:bson_iter_bool, BSON_LIB),
+            Bool, (Ptr{Uint8}, ),
+            bsonIter._wrap_
+            )
+    elseif ty == BSON_TYPE_NULL
+        return nothing
+    elseif ty == BSON_TYPE_MINKEY
+        return :minkey
+    elseif ty == BSON_TYPE_MAXKEY
+        return :maxkey
+    elseif ty == BSON_TYPE_UTF8
+        return utf8(bytestring(ccall(
+            (:bson_iter_utf8, BSON_LIB),
+            Ptr{Uint8}, (Ptr{Uint8}, Ptr{Uint8}),
+            bsonIter._wrap_,
+            C_NULL
+            )))
     else
         error("unhandle BSONType $ty")
     end
