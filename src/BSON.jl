@@ -166,25 +166,6 @@ function append_maxkey(bson::BSON, key::String)
 end
 export append_maxkey
 
-# Iterator
-
-# start(bson::BSON) = begin
-#     return BSONIter(bson)
-# end
-
-# next(bson::BSON, bsonIter::BSONIter) = begin
-#     ((key(bsonIter), value(bsonIter)), next(bsonIter))
-# end
-
-# done(bson::BSON, _bson_iter_) = begin
-#     bson_type = ccall((:bson_iterator_next, BSON_LIB), Int32, (Ptr{Void},), _iterator)
-#     if bson_type == BSON_EOO
-#         ccall((:bson_iterator_dealloc, BSON_LIB), Void, (Ptr{Void},), _iterator)
-#         return true
-#     end
-#     false
-# end
-
 # Private
 
 function destroy(bson::BSON)

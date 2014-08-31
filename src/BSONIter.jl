@@ -10,10 +10,34 @@ type BSONIter
             bsonIter._wrap_,
             bson._wrap_
             ) || error("BSONIter(): failure")
+        bsonIter.done = !ccall(
+            (:bson_iter_next, BSON_LIB),
+            Bool, (Ptr{Uint8}, ),
+            bsonIter._wrap_
+            )
         return bsonIter
     end
 end
 export BSONIter
+
+# Iterator
+
+start(bson::BSON) = begin
+    return BSONIter(bson)
+end
+export start
+
+next(bson::BSON, bsonIter::BSONIter) = begin
+    ((key(bsonIter), value(bsonIter)), next!(bsonIter))
+end
+export next
+
+done(bson::BSON, bsonIter::BSONIter) = begin
+    bsonIter.done
+end
+export done
+
+# Private
 
 function key(bsonIter::BSONIter)
     bsonIter.done && error("alredy done iteration")
@@ -25,18 +49,28 @@ function key(bsonIter::BSONIter)
     cstr == C_NULL && error("bson_iter_key: failure")
     bytestring(cstr)
 end
-export key
 
-# function value(bsonIter::BSONIter)
-#     BSONValue(
-#         ccall(
-#             (:bson_iter_value, BSON_LIB),
-#             Void, (Ptr{Uint8},),
-#             bsonIter._wrap_
-#             )
-#         )
-# end
-# export value
+function value_type(bsonIter::BSONIter)
+    bsonIter.done && error("alredy done iteration")
+    return ccall(
+        (:bson_iter_type, BSON_LIB),
+        BSONType, (Ptr{Uint8}, ),
+        bsonIter._wrap_
+        )
+end
+
+function value(bsonIter::BSONIter)
+    ty = value_type(bsonIter)
+    if ty == BSON_TYPE_DOUBLE
+        return ccall(
+            (:bson_iter_double, BSON_LIB),
+            Cdouble, (Ptr{Uint8}, ),
+            bsonIter._wrap_
+            )
+    else
+        error("unhandle BSONType $ty")
+    end
+end
 
 function next!(bsonIter::BSONIter)
     bsonIter.done = !ccall(
@@ -44,9 +78,5 @@ function next!(bsonIter::BSONIter)
         Bool, (Ptr{Uint8}, ),
         bsonIter._wrap_
         )
-    !bsonIter.done
+    bsonIter
 end
-export next!
-
-done(bsonIter::BSONIter) = bsonIter.done
-export done
