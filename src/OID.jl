@@ -50,6 +50,17 @@ function convert(::Type{String}, oid::OID)
 end
 export convert
 
+import Base.hash, Base.convert
+function hash(oid::OID, h::Uint)
+    oidHash = ccall(
+        (:bson_oid_hash, BSON_LIB),
+        Uint32, (Ptr{Uint8},),
+        oid._wrap_
+        )
+    return hash(oidHash, h)
+end
+export hash
+
 import Base.show
 show(io::IO, oid::OID) = print(io, "BSON.OID($(convert(String, oid)))")
 export show
