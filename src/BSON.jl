@@ -1,14 +1,29 @@
-module BSON
+type BSON
+    _wrap_::Ptr{Uint8}
 
-const BSON_LIB = "libbson-1.0"
+    function BSON(jsonString::String)
+        jsonCStr = bytestring(jsonString)
+        bsonError = BSONError()
+        _wrap_ = ccall(
+            (:bson_new_from_json, BSON_LIB),
+            Ptr{Uint8}, (Ptr{Uint8}, Csize_t, Ptr{Uint8}),
+            jsonCStr,
+            length(jsonCStr),
+            bsonError._wrap_
+            )
+        bson = new(_wrap_)
+        finalizer(bson, destroy)
+        return bson
+    end
+end
+export BSON
 
-LIBBSON_VERSION = VersionNumber(
-    ccall((:bson_get_major_version, BSON_LIB), Cint, ()),
-    ccall((:bson_get_minor_version, BSON_LIB), Cint, ()),
-    ccall((:bson_get_micro_version, BSON_LIB), Cint, ()),
-    )
-export LIBBSON_VERSION
+# Private
 
-include("OID.jl")
-
+function destroy(bson::BSON)
+    ccall(
+        (:bson_destroy, BSON_LIB),
+        Void, (Ptr{Void},),
+        bson._wrap_
+        )
 end

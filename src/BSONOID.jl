@@ -1,7 +1,7 @@
-immutable OID
+immutable BSONOID
     _wrap_::Vector{Uint8}
 
-    function OID()
+    function BSONOID()
         oid = new(Array(Uint8, 12))
         ccall(
             (:bson_oid_init, BSON_LIB),
@@ -12,7 +12,7 @@ immutable OID
         return oid           
     end
 
-    function OID(str::String)
+    function BSONOID(str::String)
         cstr = bytestring(str)
 
         isValid = ccall(
@@ -21,7 +21,7 @@ immutable OID
             cstr,
             length(cstr)
             )
-        isValid || error("'" * str * "': not a valid BSON.OID string")
+        isValid || error("'" * str * "': not a valid BSONOID string")
 
         oid = new(Array(Uint8, 12))
         ccall(
@@ -33,12 +33,12 @@ immutable OID
         return oid           
     end
 end
-export OID
+export BSONOID
 
-==(lhs::OID, rhs::OID) = (lhs._wrap_ == rhs._wrap_)
+==(lhs::BSONOID, rhs::BSONOID) = (lhs._wrap_ == rhs._wrap_)
 export ==
 
-function convert(::Type{String}, oid::OID)
+function convert(::Type{String}, oid::BSONOID)
     cstr = Array(Uint8, 25)
     ccall(
         (:bson_oid_to_string, BSON_LIB),
@@ -51,7 +51,7 @@ end
 export convert
 
 import Base.hash, Base.convert
-function hash(oid::OID, h::Uint)
+function hash(oid::BSONOID, h::Uint)
     oidHash = ccall(
         (:bson_oid_hash, BSON_LIB),
         Uint32, (Ptr{Uint8},),
@@ -62,5 +62,5 @@ end
 export hash
 
 import Base.show
-show(io::IO, oid::OID) = print(io, "BSON.OID($(convert(String, oid)))")
+show(io::IO, oid::BSONOID) = print(io, "BSONOID($(convert(String, oid)))")
 export show
