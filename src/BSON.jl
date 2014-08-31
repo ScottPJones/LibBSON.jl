@@ -11,6 +11,7 @@ type BSON
             length(jsonCStr),
             bsonError._wrap_
             )
+        _wrap_ != C_NULL || error(bsonError)
         bson = new(_wrap_)
         finalizer(bson, destroy)
         return bson

@@ -9,7 +9,7 @@ LIBBSON_VERSION = VersionNumber(
     )
 export LIBBSON_VERSION
 
-import Base.hash, Base.convert, Base.show
+import Base.hash, Base.convert, Base.show, Base.error
 
 include("BSONOID.jl")
 include("BSONError.jl")
