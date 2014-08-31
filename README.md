@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/pzion/LibBSON.jl.svg?branch=master)](https://travis-ci.org/pzion/LibBSON.jl)
+
 LibBSON.jl
 ==========
 
@@ -7,7 +9,7 @@ LibBSON.jl
 License
 -------
 
-This software is licensed under a simplified BSD license; see the file LICENSE for details.
+This software is licensed under the simplified BSD license; see the file LICENSE for details.
 
 
 Installing
