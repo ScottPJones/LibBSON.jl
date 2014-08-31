@@ -38,6 +38,17 @@ export BSONOID
 ==(lhs::BSONOID, rhs::BSONOID) = (lhs._wrap_ == rhs._wrap_)
 export ==
 
+import Base.hash, Base.convert
+function hash(oid::BSONOID, h::Uint)
+    oidHash = ccall(
+        (:bson_oid_hash, BSON_LIB),
+        Uint32, (Ptr{Uint8},),
+        oid._wrap_
+        )
+    return hash(oidHash, h)
+end
+export hash
+
 function convert(::Type{String}, oid::BSONOID)
     cstr = Array(Uint8, 25)
     ccall(
@@ -50,17 +61,5 @@ function convert(::Type{String}, oid::BSONOID)
 end
 export convert
 
-import Base.hash, Base.convert
-function hash(oid::BSONOID, h::Uint)
-    oidHash = ccall(
-        (:bson_oid_hash, BSON_LIB),
-        Uint32, (Ptr{Uint8},),
-        oid._wrap_
-        )
-    return hash(oidHash, h)
-end
-export hash
-
-import Base.show
 show(io::IO, oid::BSONOID) = print(io, "BSONOID($(convert(String, oid)))")
 export show

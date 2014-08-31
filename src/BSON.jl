@@ -19,6 +19,26 @@ type BSON
 end
 export BSON
 
+function convert(::Type{String}, bson::BSON)
+    cstr = ccall(
+        (:bson_as_json, BSON_LIB),
+        Ptr{Uint8}, (Ptr{Uint8}, Ptr{Uint8}),
+        bson._wrap_,
+        C_NULL
+        )
+    result = bytestring(cstr)
+    ccall(
+        (:bson_free, BSON_LIB),
+        Void, (Ptr{Uint8},),
+        cstr
+        )
+    return result
+end
+export convert
+
+show(io::IO, bson::BSON) = print(io, "BSON($(convert(String, bson)))")
+export show
+
 # Private
 
 function destroy(bson::BSON)
