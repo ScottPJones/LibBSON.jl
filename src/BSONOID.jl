@@ -57,9 +57,12 @@ function convert(::Type{String}, oid::BSONOID)
         oid._wrap_,
         cstr
         )
-    return bytestring(cstr)
+    return bytestring(convert(Ptr{Uint8}, cstr))
 end
 export convert
+
+string(oid::BSONOID) = convert(String, oid)
+export string
 
 show(io::IO, oid::BSONOID) = print(io, "BSONOID($(convert(String, oid)))")
 export show

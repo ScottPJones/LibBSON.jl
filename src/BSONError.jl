@@ -23,7 +23,7 @@ function error(bsonError::BSONError)
     uint32s = reinterpret(Uint32, bsonError._wrap_)
     domain = uint32s[1]
     code = uint32s[2]
-    message = bytestring(bsonError._wrap_[9:end])
+    message = bytestring(convert(Ptr{Uint8}, bsonError._wrap_[9:end]))
     error("libBSON:$(domainDescs[domain]):$(errorDescs[domain][code]): $message")
 end
 export error

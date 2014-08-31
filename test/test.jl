@@ -1,5 +1,13 @@
 using FactCheck, LibBSON
 
+facts("BSONOID") do
+    oid = BSONOID()
+    @fact length(string(oid)) => 24
+    @fact (oid == oid) => true
+    oid2 = BSONOID()
+    @fact (oid == oid2) => false
+end
+
 facts("BSON") do
     bson = BSON()
     append_null(bson, "null")
@@ -16,4 +24,9 @@ facts("BSON") do
         dict[k] = v
     end
     @fact dict => {"int"=>42,"string"=>"Hello, Jérôme","minkey"=>:minkey,"double"=>3.141,"bool"=>true,"null"=>nothing,"maxkey"=>:maxkey}
+
+    context("BSON from JSON") do
+        @fact_throws BSON("invalid JSON")
+        @fact string(BSON("{\"pi\": 3.141}")) => "{ \"pi\" : 3.141000 }"
+    end
 end

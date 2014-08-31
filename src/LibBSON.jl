@@ -15,7 +15,8 @@ import Base.hash,
     Base.error,
     Base.start,
     Base.next,
-    Base.done
+    Base.done,
+    Base.string
 
 include("BSONOID.jl")
 include("BSONError.jl")

@@ -46,6 +46,8 @@ function convert(::Type{String}, bson::BSON)
 end
 export convert
 
+string(bson::BSON) = convert(String, bson)
+
 show(io::IO, bson::BSON) = print(io, "BSON($(convert(String, bson)))")
 export show
 
