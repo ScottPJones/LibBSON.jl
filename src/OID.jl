@@ -11,6 +11,27 @@ immutable OID
             )
         return oid           
     end
+
+    function OID(str::String)
+        cstr = bytestring(str)
+
+        isValid = ccall(
+            (:bson_oid_is_valid, BSON_LIB),
+            Bool, (Ptr{Uint8}, Csize_t),
+            cstr,
+            length(cstr)
+            )
+        isValid || error("'" * str * "': not a valid BSON.OID string")
+
+        oid = new(Array(Uint8, 12))
+        ccall(
+            (:bson_oid_init_from_string, BSON_LIB),
+            Void, (Ptr{Uint8}, Ptr{Uint8}),
+            oid._wrap_,
+            cstr
+            )
+        return oid           
+    end
 end
 export OID
 
