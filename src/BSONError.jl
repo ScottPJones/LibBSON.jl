@@ -19,11 +19,16 @@ const errorDescs = {
         },
     }
 
-function error(bsonError::BSONError)
+convert(bsonError::BSONError) = begin
     uint32s = reinterpret(Uint32, bsonError._wrap_)
     domain = uint32s[1]
     code = uint32s[2]
-    message = bytestring(convert(Ptr{Uint8}, bsonError._wrap_[9:end]))
-    error("libBSON:$(domainDescs[domain]):$(errorDescs[domain][code]): $message")
+    return bytestring(convert(Ptr{Uint8}, bsonError._wrap_[9:end]))
 end
+export convert
+
+string(bsonError::BSONError) = convert(String, bsonError)
+export string
+
+error(bsonError::BSONError) = error(string(bsonError))
 export error
