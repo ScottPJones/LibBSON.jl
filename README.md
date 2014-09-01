@@ -9,7 +9,7 @@ LibBSON.jl
 License
 -------
 
-This software is licensed under the simplified BSD license; see the file LICENSE for details.
+This software is licensed under the simplified BSD license; see the file LICENSE.md for details.
 
 
 Installing
