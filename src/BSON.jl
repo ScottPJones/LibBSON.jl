@@ -11,6 +11,14 @@ type BSON
         return bson
     end
 
+    BSON(dict::Associative) = begin
+        bson = BSON()
+        for (k, v) in dict
+            append(bson, k, v)
+        end
+        return bson
+    end
+
     BSON(jsonString::String) = begin
         jsonCStr = bytestring(jsonString)
         bsonError = BSONError()
@@ -141,6 +149,20 @@ function append(bson::BSON, key::String, val::String)
         valUTF8,
         sizeof(valUTF8)
         ) || error("libBSON: overflow")
+end
+function append(bson::BSON, key::String, val::Nothing)
+    append_null(bson, key)
+end
+function append(bson::BSON, key::String, val::Symbol)
+    if val == :null
+        append_null(bson, key)
+    elseif val == :minkey
+        append_minkey(bson, key)
+    elseif val == :maxkey
+        append_maxkey(bson, key)
+    else
+        append(bson, key, string(val))
+    end
 end
 export append
 

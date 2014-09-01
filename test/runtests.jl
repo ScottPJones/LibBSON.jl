@@ -10,15 +10,8 @@ facts("BSONOID") do
 end
 
 facts("BSON") do
-    bson = BSON()
-    append_null(bson, "null")
-    append(bson, "bool", true)
-    append(bson, "int", 42)
-    append(bson, "double", 3.141)
-    append(bson, "string", "Hello, Jérôme")
-    append_minkey(bson, "minkey")
-    append_maxkey(bson, "maxkey")
-    @fact string(bson) => "{ \"null\" : null, \"bool\" : true, \"int\" : 42, \"double\" : 3.141000, \"string\" : \"Hello, Jérôme\", \"minkey\" : { \"\$minKey\" : 1 }, \"maxkey\" : { \"\$maxKey\" : 1 } }"
+    bson = BSON({"null"=>nothing, "bool"=>true, "int"=>42, "double"=>3.141, "string"=>"Hello, Jérôme", "minkey"=>:minkey, "maxkey"=>:maxkey})
+    @fact string(bson) => "{ \"int\" : 42, \"string\" : \"Hello, Jérôme\", \"minkey\" : { \"\$minKey\" : 1 }, \"double\" : 3.141000, \"bool\" : true, \"null\" : null, \"maxkey\" : { \"\$maxKey\" : 1 } }"
 
     dict = Dict{Any, Any}()
     for (k, v) in bson
@@ -27,9 +20,8 @@ facts("BSON") do
     @fact dict => {"int"=>42,"string"=>"Hello, Jérôme","minkey"=>:minkey,"double"=>3.141,"bool"=>true,"null"=>nothing,"maxkey"=>:maxkey}
 
     context("BSON with OID") do
-        bson = BSON()
         oid = BSONOID()
-        append(bson, "oid", oid)
+        bson = BSON({"oid"=>oid})
         @fact (length(string(bson)) > 0) => true
         @fact (bson["oid"] == oid) => true
     end
@@ -40,10 +32,8 @@ facts("BSON") do
     end
 
     context("BSON containing BSON") do
-        subBSON = BSON()
-        append(subBSON, "key", "value")
-        bson = BSON()
-        append(bson, "sub", subBSON)
+        subBSON = BSON({"key"=>"value"})
+        bson = BSON({"sub"=>subBSON})
         @fact string(bson) => "{ \"sub\" : { \"key\" : \"value\" } }"
         @fact string(bson["sub"]) => "{ \"key\" : \"value\" }"
     end
