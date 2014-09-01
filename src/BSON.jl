@@ -227,7 +227,7 @@ export append_maxkey
 dict(bson::BSON) = begin
     d = Dict{Any, Any}()
     for (k, v) in bson
-        if isa(v, BSON)
+        if isa(v, BSON) || isa(v, Array)
             d[k] = dict(v)
         else
             d[k] = v
