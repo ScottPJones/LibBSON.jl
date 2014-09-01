@@ -17,11 +17,13 @@ import Base.hash,
     Base.next,
     Base.done,
     Base.string,
-    Base.dict
+    Base.dict,
+    Base.length
 
 include("BSONOID.jl")
 include("BSONError.jl")
 include("BSONObject.jl")
+include("BSONArray.jl")
 include("BSONType.jl")
 include("BSONIter.jl")
 

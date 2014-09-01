@@ -18,7 +18,7 @@ type BSONIter
         return bsonIter
     end
 
-    function BSONIter(bsonObject::BSONObject, key)
+    function BSONIter(bsonObject::BSONObject, key::String)
         bsonIter = new(Array(Uint8, 128), false)
         ccall(
             (:bson_iter_init, BSON_LIB),
@@ -35,13 +35,53 @@ type BSONIter
             )
         return bsonIter
     end
+
+    function BSONIter(bsonArray::BSONArray)
+        bsonIter = new(Array(Uint8, 128), false)
+        ccall(
+            (:bson_iter_init, BSON_LIB),
+            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            bsonIter._wrap_,
+            bsonArray._wrap_
+            ) || error("BSONIter(): failure")
+        bsonIter.done = !ccall(
+            (:bson_iter_next, BSON_LIB),
+            Bool, (Ptr{Uint8}, ),
+            bsonIter._wrap_
+            )
+        return bsonIter
+    end
+
+    function BSONIter(bsonArray::BSONArray, key::Integer)
+        bsonIter = new(Array(Uint8, 128), false)
+        ccall(
+            (:bson_iter_init, BSON_LIB),
+            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            bsonIter._wrap_,
+            bsonArray._wrap_
+            ) || error("BSONIter(): failure")
+        keyCStr = bytestring(string(key))
+        bsonIter.done = !ccall(
+            (:bson_iter_find, BSON_LIB),
+            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            bsonIter._wrap_,
+            keyCStr
+            )
+        return bsonIter
+    end
 end
 export BSONIter
 
 # Index
 
-Base.getindex(bsonObject::BSONObject, key) = begin
+Base.getindex(bsonObject::BSONObject, key::String) = begin
     bsonIter = BSONIter(bsonObject, key)
+    bsonIter.done && error("key not found: $(repr(key))")
+    value(bsonIter)
+end
+
+Base.getindex(bsonArray::BSONArray, key::Integer) = begin
+    bsonIter = BSONIter(bsonArray, key)
     bsonIter.done && error("key not found: $(repr(key))")
     value(bsonIter)
 end
@@ -59,6 +99,21 @@ end
 export next
 
 done(bsonObject::BSONObject, bsonIter::BSONIter) = begin
+    bsonIter.done
+end
+export done
+
+start(bsonArray::BSONArray) = begin
+    return BSONIter(bsonArray)
+end
+export start
+
+next(bsonArray::BSONArray, bsonIter::BSONIter) = begin
+    (value(bsonIter), next!(bsonIter))
+end
+export next
+
+done(bsonArray::BSONArray, bsonIter::BSONIter) = begin
     bsonIter.done
 end
 export done
@@ -139,20 +194,15 @@ function value(bsonIter::BSONIter)
             bsonIter._wrap_, length, data
             )
         return BSONObject(data[1], length[1])
-    # elseif ty == BSON_TYPE_ARRAY
-    #     length = Array(Uint32, 1)
-    #     data = Array(Ptr{Uint8}, 1)
-    #     ccall(
-    #         (:bson_iter_array, BSON_LIB),
-    #         Ptr{Void}, (Ptr{Uint8}, Ptr{Uint32}, Ptr{Ptr{Uint8}}),
-    #         bsonIter._wrap_, length, data
-    #         )
-    #     bson = BSONObject(data[1], length[1])
-    #     result = Any[]
-    #     for (k,v) in bson
-    #         push!(result, v)
-    #     end
-    #     return result
+    elseif ty == BSON_TYPE_ARRAY
+        length = Array(Uint32, 1)
+        data = Array(Ptr{Uint8}, 1)
+        ccall(
+            (:bson_iter_array, BSON_LIB),
+            Ptr{Void}, (Ptr{Uint8}, Ptr{Uint32}, Ptr{Ptr{Uint8}}),
+            bsonIter._wrap_, length, data
+            )
+        return BSONArray(data[1], length[1])
     else
         error("unhandled BSONType $ty")
     end

@@ -22,10 +22,12 @@ facts("BSONObject") do
         "regularSymbol"=>:symbol,
         "subdict"=>{
             "key"=>"value"
-            }
+            },
+        "array"=>{"hello", {"foo"=>{56,false}}}
         })
-    @fact string(bsonObject) => "{ \"int\" : 42, \"string\" : \"Hello, Jérôme\", \"minkey\" : { \"\$minKey\" : 1 }, \"regularSymbol\" : \"symbol\", \"anotherNull\" : null, \"subdict\" : { \"key\" : \"value\" }, \"double\" : 3.141000, \"bool\" : true, \"null\" : null, \"maxkey\" : { \"\$maxKey\" : 1 } }"
-    @fact dict(bsonObject) => {"int"=>42,"string"=>"Hello, Jérôme","minkey"=>:minkey,"regularSymbol"=>"symbol","anotherNull"=>nothing,"subdict"=>{"key"=>"value"},"double"=>3.141,"bool"=>true,"null"=>nothing,"maxkey"=>:maxkey}
+    @fact length(bsonObject) => 11
+    @fact string(bsonObject) => "{ \"string\" : \"Hello, Jérôme\", \"anotherNull\" : null, \"null\" : null, \"regularSymbol\" : \"symbol\", \"bool\" : true, \"int\" : 42, \"minkey\" : { \"\$minKey\" : 1 }, \"maxkey\" : { \"\$maxKey\" : 1 }, \"array\" : [ \"hello\", { \"foo\" : [ 56, false ] } ], \"subdict\" : { \"key\" : \"value\" }, \"double\" : 3.141000 }"
+    @fact dict(bsonObject) => {"string"=>"Hello, Jérôme","anotherNull"=>nothing,"null"=>nothing,"regularSymbol"=>"symbol","bool"=>true,"int"=>42,"minkey"=>:minkey,"maxkey"=>:maxkey,"array"=>{"hello",{"foo"=>{56,false}}},"subdict"=>{"key"=>"value"},"double"=>3.141}
 
     context("BSONObject with OID") do
         oid = BSONOID()
@@ -45,4 +47,21 @@ facts("BSONObject") do
         @fact string(bsonObject) => "{ \"sub\" : { \"key\" : \"value\" } }"
         @fact string(bsonObject["sub"]) => "{ \"key\" : \"value\" }"
     end
+end
+
+facts("BSONArray") do
+    bsonArray = BSONArray([
+        nothing,
+        true,
+        42,
+        3.141,
+        "Hello, Jérôme",
+        :null,
+        :minkey,
+        :maxkey,
+        :symbol
+        ])
+    @fact length(bsonArray) => 9
+    @fact string(bsonArray) => "[ null, true, 42, 3.141000, \"Hello, Jérôme\", null, { \"\$minKey\" : 1 }, { \"\$maxKey\" : 1 }, \"symbol\" ]"
+    @fact vector(bsonArray) => {nothing,true,42,3.141,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol"}
 end
