@@ -21,22 +21,35 @@ You must have libbson installed; see https://github.com/mongodb/libbson for deta
 Getting Started
 ---------------
 
+Example usage:
+
     using LibBSON
 
-    bson = BSON()
-    append_null(bson, "null")
-    append(bson, "bool", true)
-    append(bson, "int", 42)
-    append(bson, "double", 3.141)
-    append(bson, "string", "Hello, Jérôme")
-    append(bson, "oid", BSONOID())
-    append_minkey(bson, "minkey")
-    append_maxkey(bson, "maxkey")
-    println(bson)
-    println(bson["string"])
-    for (k, v) in bson
+    bsonObject = BSONObject({
+        "null"=>nothing,
+        "bool"=>true,
+        "int"=>42,
+        "double"=>3.141,
+        "string"=>"Hello, Jérôme",
+        "oid"=>BSONOID(),
+        "minkey"=>:minkey,
+        "maxkey"=>:maxkey,
+        "array"=>{5.41, false}
+        })
+    println(bsonObject)
+    println(bsonObject["string"])
+    for (k, v) in bsonObject
         println("$k => $v")
     end
+    bsonArray = BSONArray({
+        "one",
+        {"key"=>6.7}
+        })
+    for e in bsonArray
+        println(e)
+    end
+
+Please refer to the unit tests in test/runtests.jl for more examples of usage.
 
 
 Contributing
