@@ -2,13 +2,13 @@ type BSONIter
     _wrap_::Vector{Uint8}
     done::Bool
 
-    function BSONIter(bson::BSON)
+    function BSONIter(bsonObject::BSONObject)
         bsonIter = new(Array(Uint8, 128), false)
         ccall(
             (:bson_iter_init, BSON_LIB),
             Bool, (Ptr{Uint8}, Ptr{Uint8}),
             bsonIter._wrap_,
-            bson._wrap_
+            bsonObject._wrap_
             ) || error("BSONIter(): failure")
         bsonIter.done = !ccall(
             (:bson_iter_next, BSON_LIB),
@@ -18,13 +18,13 @@ type BSONIter
         return bsonIter
     end
 
-    function BSONIter(bson::BSON, key)
+    function BSONIter(bsonObject::BSONObject, key)
         bsonIter = new(Array(Uint8, 128), false)
         ccall(
             (:bson_iter_init, BSON_LIB),
             Bool, (Ptr{Uint8}, Ptr{Uint8}),
             bsonIter._wrap_,
-            bson._wrap_
+            bsonObject._wrap_
             ) || error("BSONIter(): failure")
         keyCStr = bytestring(key)
         bsonIter.done = !ccall(
@@ -40,25 +40,25 @@ export BSONIter
 
 # Index
 
-Base.getindex(bson::BSON, key) = begin
-    bsonIter = BSONIter(bson, key)
+Base.getindex(bsonObject::BSONObject, key) = begin
+    bsonIter = BSONIter(bsonObject, key)
     bsonIter.done && error("key not found: $(repr(key))")
     value(bsonIter)
 end
 
 # Iterator
 
-start(bson::BSON) = begin
-    return BSONIter(bson)
+start(bsonObject::BSONObject) = begin
+    return BSONIter(bsonObject)
 end
 export start
 
-next(bson::BSON, bsonIter::BSONIter) = begin
+next(bsonObject::BSONObject, bsonIter::BSONIter) = begin
     ((key(bsonIter), value(bsonIter)), next!(bsonIter))
 end
 export next
 
-done(bson::BSON, bsonIter::BSONIter) = begin
+done(bsonObject::BSONObject, bsonIter::BSONIter) = begin
     bsonIter.done
 end
 export done
@@ -138,7 +138,21 @@ function value(bsonIter::BSONIter)
             Ptr{Void}, (Ptr{Uint8}, Ptr{Uint32}, Ptr{Ptr{Uint8}}),
             bsonIter._wrap_, length, data
             )
-        return BSON(data[1], length[1])
+        return BSONObject(data[1], length[1])
+    # elseif ty == BSON_TYPE_ARRAY
+    #     length = Array(Uint32, 1)
+    #     data = Array(Ptr{Uint8}, 1)
+    #     ccall(
+    #         (:bson_iter_array, BSON_LIB),
+    #         Ptr{Void}, (Ptr{Uint8}, Ptr{Uint32}, Ptr{Ptr{Uint8}}),
+    #         bsonIter._wrap_, length, data
+    #         )
+    #     bson = BSONObject(data[1], length[1])
+    #     result = Any[]
+    #     for (k,v) in bson
+    #         push!(result, v)
+    #     end
+    #     return result
     else
         error("unhandled BSONType $ty")
     end

@@ -1,7 +1,7 @@
-type BSON
+type BSONObject
     _wrap_::Ptr{Void}
 
-    BSON() = begin
+    BSONObject() = begin
         _wrap_ = ccall(
             (:bson_new, BSON_LIB),
             Ptr{Void}, ()
@@ -11,15 +11,15 @@ type BSON
         return bson
     end
 
-    BSON(dict::Associative) = begin
-        bson = BSON()
+    BSONObject(dict::Associative) = begin
+        bson = BSONObject()
         for (k, v) in dict
             append(bson, k, v)
         end
         return bson
     end
 
-    BSON(jsonString::String) = begin
+    BSONObject(jsonString::String) = begin
         jsonCStr = bytestring(jsonString)
         bsonError = BSONError()
         _wrap_ = ccall(
@@ -30,12 +30,12 @@ type BSON
             bsonError._wrap_
             )
         _wrap_ != C_NULL || error(bsonError)
-        bson = new(_wrap_)
-        finalizer(bson, destroy)
-        return bson
+        bsonObject = new(_wrap_)
+        finalizer(bsonObject, destroy)
+        return bsonObject
     end
 
-    BSON(data::Ptr{Uint8}, length::Integer) = begin
+    BSONObject(data::Ptr{Uint8}, length::Integer) = begin
         buffer = Array(Uint8, 128)
         ccall(
             (:bson_init_static, BSON_LIB),
@@ -45,15 +45,15 @@ type BSON
         new(buffer)
     end
 
-    BSON(_wrap_::Ptr{Void}) = new(_wrap_)
+    BSONObject(_wrap_::Ptr{Void}) = new(_wrap_)
 end
-export BSON
+export BSONObject
 
-function convert(::Type{String}, bson::BSON)
+function convert(::Type{String}, bsonObject::BSONObject)
     cstr = ccall(
         (:bson_as_json, BSON_LIB),
         Ptr{Uint8}, (Ptr{Void}, Ptr{Uint8}),
-        bson._wrap_,
+        bsonObject._wrap_,
         C_NULL
         )
     result = bytestring(cstr)
@@ -66,168 +66,190 @@ function convert(::Type{String}, bson::BSON)
 end
 export convert
 
-string(bson::BSON) = convert(String, bson)
+string(bsonObject::BSONObject) = convert(String, bsonObject)
 
-show(io::IO, bson::BSON) = print(io, "BSON($(convert(String, bson)))")
+show(io::IO, bsonObject::BSONObject) = print(io, "BSONObject($(convert(String, bsonObject)))")
 export show
 
-function append(bson::BSON, key::String, val::Bool)
+function append(bsonObject::BSONObject, key::String, val::Bool)
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_bool, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Bool),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
         val
         ) || error("libBSON: overflow")
 end
-function append(bson::BSON, key::String, val::Real)
+function append(bsonObject::BSONObject, key::String, val::Real)
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_double, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Cdouble),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
         val
         ) || error("libBSON: overflow")
 end
-function append(bson::BSON, key::String, val::BSON)
+function append(bsonObject::BSONObject, key::String, val::BSONObject)
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_document, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Uint8}),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
         val._wrap_
         ) || error("libBSON: overflow")
 end
-function append(bson::BSON, key::String, val::Union(Int8, Uint8, Int16, Uint16, Int32, Uint32))
+function append(bsonObject::BSONObject, key::String, val::Union(Int8, Uint8, Int16, Uint16, Int32, Uint32))
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_int32, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Int32),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
         val
         ) || error("libBSON: overflow")
 end
-function append(bson::BSON, key::String, val::Union(Int64, Uint64))
+function append(bsonObject::BSONObject, key::String, val::Union(Int64, Uint64))
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_int64, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Int64),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
         val
         ) || error("libBSON: overflow")
 end
-function append(bson::BSON, key::String, val::BSONOID)
+function append(bsonObject::BSONObject, key::String, val::BSONOID)
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_oid, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Uint8}),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
         val._wrap_
         ) || error("libBSON: overflow")
 end
-function append(bson::BSON, key::String, val::String)
+function append(bsonObject::BSONObject, key::String, val::String)
     keyCStr = bytestring(key)
     valUTF8 = utf8(val)
     ccall(
         (:bson_append_utf8, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Uint8}, Cint),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
         valUTF8,
         sizeof(valUTF8)
         ) || error("libBSON: overflow")
 end
-function append(bson::BSON, key::String, val::Nothing)
-    append_null(bson, key)
+function append(bsonObject::BSONObject, key::String, val::Nothing)
+    append_null(bsonObject, key)
 end
-function append(bson::BSON, key::String, val::Symbol)
+function append(bsonObject::BSONObject, key::String, val::Symbol)
     if val == :null
-        append_null(bson, key)
+        append_null(bsonObject, key)
     elseif val == :minkey
-        append_minkey(bson, key)
+        append_minkey(bsonObject, key)
     elseif val == :maxkey
-        append_maxkey(bson, key)
+        append_maxkey(bsonObject, key)
     else
-        append(bson, key, string(val))
+        append(bsonObject, key, string(val))
     end
 end
-function append(bson::BSON, key::String, val::Dict)
+function append(bsonObject::BSONObject, key::String, val::Dict)
     keyCStr = bytestring(key)
     childBuffer = Array(Uint8, 128)
     ccall(
         (:bson_append_document_begin, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Void}),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
         childBuffer
         ) || error("bson_append_document_begin: failure")
-    childBSON = BSON(convert(Ptr{Void}, childBuffer))
+    childBSON = BSONObject(convert(Ptr{Void}, childBuffer))
     for (k, v) in val
         append(childBSON, k, v)
     end
     ccall(
         (:bson_append_document_end, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Void}),
-        bson._wrap_,
+        bsonObject._wrap_,
         childBuffer
         ) || error("bson_append_document_end: failure")
 end
+# function append(bsonObject::BSONObject, key::String, val::Vector)
+#     keyCStr = bytestring(key)
+#     childBuffer = Array(Uint8, 128)
+#     ccall(
+#         (:bson_append_array_begin, BSON_LIB),
+#         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Void}),
+#         bsonObject._wrap_,
+#         keyCStr,
+#         length(keyCStr),
+#         childBuffer
+#         ) || error("bson_append_array_begin: failure")
+#     childBSON = BSON(convert(Ptr{Void}, childBuffer))
+#     for i = 1:length(val)
+#         append(childBSON, string(i), val[i])
+#     end
+#     ccall(
+#         (:bson_append_array_end, BSON_LIB),
+#         Bool, (Ptr{Void}, Ptr{Void}),
+#         bsonObject._wrap_,
+#         childBuffer
+#         ) || error("bson_append_array_end: failure")
+# end
 export append
 
-function append_null(bson::BSON, key::String)
+function append_null(bsonObject::BSONObject, key::String)
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_null, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr)
         ) || error("libBSON: overflow")
 end
 export append_null
 
-function append_minkey(bson::BSON, key::String)
+function append_minkey(bsonObject::BSONObject, key::String)
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_minkey, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr)
         ) || error("libBSON: overflow")
 end
 export append_minkey
 
-function append_maxkey(bson::BSON, key::String)
+function append_maxkey(bsonObject::BSONObject, key::String)
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_maxkey, BSON_LIB),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint),
-        bson._wrap_,
+        bsonObject._wrap_,
         keyCStr,
         length(keyCStr)
         ) || error("libBSON: overflow")
 end
 export append_maxkey
 
-dict(bson::BSON) = begin
+dict(bsonObject::BSONObject) = begin
     d = Dict{Any, Any}()
-    for (k, v) in bson
-        if isa(v, BSON) || isa(v, Array)
+    for (k, v) in bsonObject
+        if isa(v, BSONObject)
             d[k] = dict(v)
         else
             d[k] = v
@@ -239,10 +261,10 @@ export dict
 
 # Private
 
-function destroy(bson::BSON)
+function destroy(bsonObject::BSONObject)
     ccall(
         (:bson_destroy, BSON_LIB),
         Void, (Ptr{Void},),
-        bson._wrap_
+        bsonObject._wrap_
         )
 end

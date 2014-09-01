@@ -9,8 +9,8 @@ facts("BSONOID") do
     @fact (oid == oid2) => false
 end
 
-facts("BSON") do
-    bson = BSON({
+facts("BSONObject") do
+    bsonObject = BSONObject({
         "null"=>nothing,
         "bool"=>true,
         "int"=>42,
@@ -24,25 +24,25 @@ facts("BSON") do
             "key"=>"value"
             }
         })
-    @fact string(bson) => "{ \"int\" : 42, \"string\" : \"Hello, Jérôme\", \"minkey\" : { \"\$minKey\" : 1 }, \"regularSymbol\" : \"symbol\", \"anotherNull\" : null, \"subdict\" : { \"key\" : \"value\" }, \"double\" : 3.141000, \"bool\" : true, \"null\" : null, \"maxkey\" : { \"\$maxKey\" : 1 } }"
-    @fact dict(bson) => {"int"=>42,"string"=>"Hello, Jérôme","minkey"=>:minkey,"regularSymbol"=>"symbol","anotherNull"=>nothing,"subdict"=>{"key"=>"value"},"double"=>3.141,"bool"=>true,"null"=>nothing,"maxkey"=>:maxkey}
+    @fact string(bsonObject) => "{ \"int\" : 42, \"string\" : \"Hello, Jérôme\", \"minkey\" : { \"\$minKey\" : 1 }, \"regularSymbol\" : \"symbol\", \"anotherNull\" : null, \"subdict\" : { \"key\" : \"value\" }, \"double\" : 3.141000, \"bool\" : true, \"null\" : null, \"maxkey\" : { \"\$maxKey\" : 1 } }"
+    @fact dict(bsonObject) => {"int"=>42,"string"=>"Hello, Jérôme","minkey"=>:minkey,"regularSymbol"=>"symbol","anotherNull"=>nothing,"subdict"=>{"key"=>"value"},"double"=>3.141,"bool"=>true,"null"=>nothing,"maxkey"=>:maxkey}
 
-    context("BSON with OID") do
+    context("BSONObject with OID") do
         oid = BSONOID()
-        bson = BSON({"oid"=>oid})
-        @fact (length(string(bson)) > 0) => true
-        @fact (bson["oid"] == oid) => true
+        bsonObject = BSONObject({"oid"=>oid})
+        @fact (length(string(bsonObject)) > 0) => true
+        @fact (bsonObject["oid"] == oid) => true
     end
 
-    context("BSON from JSON") do
-        @fact_throws BSON("invalid JSON")
-        @fact string(BSON("{\"pi\": 3.141}")) => "{ \"pi\" : 3.141000 }"
+    context("BSONObject from JSON") do
+        @fact_throws BSONObject("invalid JSON")
+        @fact string(BSONObject("{\"pi\": 3.141}")) => "{ \"pi\" : 3.141000 }"
     end
 
-    context("BSON containing BSON") do
-        subBSON = BSON({"key"=>"value"})
-        bson = BSON({"sub"=>subBSON})
-        @fact string(bson) => "{ \"sub\" : { \"key\" : \"value\" } }"
-        @fact string(bson["sub"]) => "{ \"key\" : \"value\" }"
+    context("BSONObject containing BSONObject") do
+        subBSONObject = BSONObject({"key"=>"value"})
+        bsonObject = BSONObject({"sub"=>subBSONObject})
+        @fact string(bsonObject) => "{ \"sub\" : { \"key\" : \"value\" } }"
+        @fact string(bsonObject["sub"]) => "{ \"key\" : \"value\" }"
     end
 end

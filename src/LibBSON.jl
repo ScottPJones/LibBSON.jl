@@ -21,7 +21,7 @@ import Base.hash,
 
 include("BSONOID.jl")
 include("BSONError.jl")
-include("BSON.jl")
+include("BSONObject.jl")
 include("BSONType.jl")
 include("BSONIter.jl")
 
