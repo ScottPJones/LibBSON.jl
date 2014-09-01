@@ -10,14 +10,22 @@ facts("BSONOID") do
 end
 
 facts("BSON") do
-    bson = BSON({"null"=>nothing, "bool"=>true, "int"=>42, "double"=>3.141, "string"=>"Hello, Jérôme", "minkey"=>:minkey, "maxkey"=>:maxkey})
-    @fact string(bson) => "{ \"int\" : 42, \"string\" : \"Hello, Jérôme\", \"minkey\" : { \"\$minKey\" : 1 }, \"double\" : 3.141000, \"bool\" : true, \"null\" : null, \"maxkey\" : { \"\$maxKey\" : 1 } }"
-
-    dict = Dict{Any, Any}()
-    for (k, v) in bson
-        dict[k] = v
-    end
-    @fact dict => {"int"=>42,"string"=>"Hello, Jérôme","minkey"=>:minkey,"double"=>3.141,"bool"=>true,"null"=>nothing,"maxkey"=>:maxkey}
+    bson = BSON({
+        "null"=>nothing,
+        "bool"=>true,
+        "int"=>42,
+        "double"=>3.141,
+        "string"=>"Hello, Jérôme",
+        "anotherNull"=>:null,
+        "minkey"=>:minkey,
+        "maxkey"=>:maxkey,
+        "regularSymbol"=>:symbol,
+        "subdict"=>{
+            "key"=>"value"
+            }
+        })
+    @fact string(bson) => "{ \"int\" : 42, \"string\" : \"Hello, Jérôme\", \"minkey\" : { \"\$minKey\" : 1 }, \"regularSymbol\" : \"symbol\", \"anotherNull\" : null, \"subdict\" : { \"key\" : \"value\" }, \"double\" : 3.141000, \"bool\" : true, \"null\" : null, \"maxkey\" : { \"\$maxKey\" : 1 } }"
+    @fact dict(bson) => {"int"=>42,"string"=>"Hello, Jérôme","minkey"=>:minkey,"regularSymbol"=>"symbol","anotherNull"=>nothing,"subdict"=>{"key"=>"value"},"double"=>3.141,"bool"=>true,"null"=>nothing,"maxkey"=>:maxkey}
 
     context("BSON with OID") do
         oid = BSONOID()

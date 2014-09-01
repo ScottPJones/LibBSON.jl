@@ -35,7 +35,7 @@ type BSON
         return bson
     end
 
-    BSON(data::Ptr{Uint8}, length::Uint32) = begin
+    BSON(data::Ptr{Uint8}, length::Integer) = begin
         buffer = Array(Uint8, 128)
         ccall(
             (:bson_init_static, BSON_LIB),
@@ -164,6 +164,28 @@ function append(bson::BSON, key::String, val::Symbol)
         append(bson, key, string(val))
     end
 end
+function append(bson::BSON, key::String, val::Dict)
+    keyCStr = bytestring(key)
+    childBuffer = Array(Uint8, 128)
+    ccall(
+        (:bson_append_document_begin, BSON_LIB),
+        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Void}),
+        bson._wrap_,
+        keyCStr,
+        length(keyCStr),
+        childBuffer
+        ) || error("bson_append_document_begin: failure")
+    childBSON = BSON(convert(Ptr{Void}, childBuffer))
+    for (k, v) in val
+        append(childBSON, k, v)
+    end
+    ccall(
+        (:bson_append_document_end, BSON_LIB),
+        Bool, (Ptr{Void}, Ptr{Void}),
+        bson._wrap_,
+        childBuffer
+        ) || error("bson_append_document_end: failure")
+end
 export append
 
 function append_null(bson::BSON, key::String)
@@ -201,6 +223,19 @@ function append_maxkey(bson::BSON, key::String)
         ) || error("libBSON: overflow")
 end
 export append_maxkey
+
+dict(bson::BSON) = begin
+    d = Dict{Any, Any}()
+    for (k, v) in bson
+        if isa(v, BSON)
+            d[k] = dict(v)
+        else
+            d[k] = v
+        end
+    end
+    return d
+end
+export dict
 
 # Private
 
