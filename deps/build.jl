@@ -4,10 +4,19 @@ using BinDeps
 
 ENV["JULIA_ROOT"] = abspath(JULIA_HOME, "../../")
 
-libbson = library_dependency("libbson-1.0")
+libbson = library_dependency(
+    "libbson",
+    aliases = ["libbson", "libbson-1.0"],
+    runtime = false
+    )
 
-# TODO: add other providers with correct names
-provides(AptGet, {"libmongo-client-dev" => libbson})
+provides(Sources, {
+    URI("http://github.com/mongodb/libbson/releases/download/1.0.0/libbson-1.0.0.tar.gz") => libbson
+    })
+
+provides(BuildProcess, {
+    Autotools(libtarget = "libbson/libbson-1.0"*BinDeps.shlib_ext) => libbson
+    })
 
 @osx_only begin
     using Homebrew
