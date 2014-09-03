@@ -19,7 +19,7 @@ const errorDescs = {
         },
     }
 
-convert(bsonError::BSONError) = begin
+convert(::Type{String}, bsonError::BSONError) = begin
     uint32s = reinterpret(Uint32, bsonError._wrap_)
     domain = uint32s[1]
     code = uint32s[2]
