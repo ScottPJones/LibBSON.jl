@@ -1,11 +1,11 @@
 module LibBSON
 
-const BSON_LIB = "libbson"
+include( "../deps/deps.jl")
 
 LIBBSON_VERSION = VersionNumber(
-    ccall((:bson_get_major_version, BSON_LIB), Cint, ()),
-    ccall((:bson_get_minor_version, BSON_LIB), Cint, ()),
-    ccall((:bson_get_micro_version, BSON_LIB), Cint, ()),
+    ccall((:bson_get_major_version, libbson), Cint, ()),
+    ccall((:bson_get_minor_version, libbson), Cint, ()),
+    ccall((:bson_get_micro_version, libbson), Cint, ()),
     )
 export LIBBSON_VERSION
 

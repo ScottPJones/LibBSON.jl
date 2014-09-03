@@ -3,7 +3,7 @@ type BSONArray
 
     BSONArray() = begin
         _wrap_ = ccall(
-            (:bson_new, BSON_LIB),
+            (:bson_new, libbson),
             Ptr{Void}, ()
             )
         bsonArray = new(_wrap_)
@@ -23,7 +23,7 @@ type BSONArray
         jsonCStr = bytestring(jsonString)
         bsonError = BSONError()
         _wrap_ = ccall(
-            (:bson_new_from_json, BSON_LIB),
+            (:bson_new_from_json, libbson),
             Ptr{Void}, (Ptr{Uint8}, Csize_t, Ptr{Uint8}),
             jsonCStr,
             length(jsonCStr),
@@ -38,7 +38,7 @@ type BSONArray
     BSONArray(data::Ptr{Uint8}, length::Integer) = begin
         buffer = Array(Uint8, 128)
         ccall(
-            (:bson_init_static, BSON_LIB),
+            (:bson_init_static, libbson),
             Bool, (Ptr{Void}, Ptr{Uint8}, Uint32),
             buffer, data, length
             ) || error("bson_init_static: failure")
@@ -51,14 +51,14 @@ export BSONArray
 
 function convert(::Type{String}, bsonArray::BSONArray)
     cstr = ccall(
-        (:bson_array_as_json, BSON_LIB),
+        (:bson_array_as_json, libbson),
         Ptr{Uint8}, (Ptr{Void}, Ptr{Uint8}),
         bsonArray._wrap_,
         C_NULL
         )
     result = bytestring(cstr)
     ccall(
-        (:bson_free, BSON_LIB),
+        (:bson_free, libbson),
         Void, (Ptr{Void},),
         cstr
         )
@@ -73,7 +73,7 @@ export show
 
 length(bsonArray::BSONArray) =
     ccall(
-        (:bson_count_keys, BSON_LIB),
+        (:bson_count_keys, libbson),
         Uint32, (Ptr{Void},),
         bsonArray._wrap_
         )
@@ -81,7 +81,7 @@ length(bsonArray::BSONArray) =
 function append(bsonArray::BSONArray, val::Bool)
     keyCStr = bytestring(string(length(bsonArray)))
     ccall(
-        (:bson_append_bool, BSON_LIB),
+        (:bson_append_bool, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Bool),
         bsonArray._wrap_,
         keyCStr,
@@ -92,7 +92,7 @@ end
 function append(bsonArray::BSONArray, val::Real)
     keyCStr = bytestring(string(length(bsonArray)))
     ccall(
-        (:bson_append_double, BSON_LIB),
+        (:bson_append_double, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Cdouble),
         bsonArray._wrap_,
         keyCStr,
@@ -103,7 +103,7 @@ end
 function append(bsonArray::BSONArray, val::BSONArray)
     keyCStr = bytestring(string(length(bsonArray)))
     ccall(
-        (:bson_append_document, BSON_LIB),
+        (:bson_append_document, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Uint8}),
         bsonArray._wrap_,
         keyCStr,
@@ -114,7 +114,7 @@ end
 function append(bsonArray::BSONArray, val::Union(Int8, Uint8, Int16, Uint16, Int32, Uint32))
     keyCStr = bytestring(string(length(bsonArray)))
     ccall(
-        (:bson_append_int32, BSON_LIB),
+        (:bson_append_int32, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Int32),
         bsonArray._wrap_,
         keyCStr,
@@ -125,7 +125,7 @@ end
 function append(bsonArray::BSONArray, val::Union(Int64, Uint64))
     keyCStr = bytestring(string(length(bsonArray)))
     ccall(
-        (:bson_append_int64, BSON_LIB),
+        (:bson_append_int64, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Int64),
         bsonArray._wrap_,
         keyCStr,
@@ -136,7 +136,7 @@ end
 function append(bsonArray::BSONArray, val::BSONOID)
     keyCStr = bytestring(string(length(bsonArray)))
     ccall(
-        (:bson_append_oid, BSON_LIB),
+        (:bson_append_oid, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Uint8}),
         bsonArray._wrap_,
         keyCStr,
@@ -148,7 +148,7 @@ function append(bsonArray::BSONArray, val::String)
     keyCStr = bytestring(string(length(bsonArray)))
     valUTF8 = utf8(val)
     ccall(
-        (:bson_append_utf8, BSON_LIB),
+        (:bson_append_utf8, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Uint8}, Cint),
         bsonArray._wrap_,
         keyCStr,
@@ -175,7 +175,7 @@ function append(bsonArray::BSONArray, val::Dict)
     keyCStr = bytestring(string(length(bsonArray)))
     childBuffer = Array(Uint8, 128)
     ccall(
-        (:bson_append_document_begin, BSON_LIB),
+        (:bson_append_document_begin, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Void}),
         bsonArray._wrap_,
         keyCStr,
@@ -187,7 +187,7 @@ function append(bsonArray::BSONArray, val::Dict)
         append(childBSONObject, k, v)
     end
     ccall(
-        (:bson_append_document_end, BSON_LIB),
+        (:bson_append_document_end, libbson),
         Bool, (Ptr{Void}, Ptr{Void}),
         bsonArray._wrap_,
         childBuffer
@@ -197,7 +197,7 @@ function append(bsonArray::BSONArray, val::Vector)
     keyCStr = bytestring(string(length(bsonArray)))
     childBuffer = Array(Uint8, 128)
     ccall(
-        (:bson_append_array_begin, BSON_LIB),
+        (:bson_append_array_begin, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Void}),
         bsonArray._wrap_,
         keyCStr,
@@ -209,7 +209,7 @@ function append(bsonArray::BSONArray, val::Vector)
         append(childBSONArray, element)
     end
     ccall(
-        (:bson_append_array_end, BSON_LIB),
+        (:bson_append_array_end, libbson),
         Bool, (Ptr{Void}, Ptr{Void}),
         bsonArray._wrap_,
         childBuffer
@@ -220,7 +220,7 @@ export append
 function append_null(bsonArray::BSONArray)
     keyCStr = bytestring(string(length(bsonArray)))
     ccall(
-        (:bson_append_null, BSON_LIB),
+        (:bson_append_null, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint),
         bsonArray._wrap_,
         keyCStr,
@@ -232,7 +232,7 @@ export append_null
 function append_minkey(bsonArray::BSONArray)
     keyCStr = bytestring(string(length(bsonArray)))
     ccall(
-        (:bson_append_minkey, BSON_LIB),
+        (:bson_append_minkey, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint),
         bsonArray._wrap_,
         keyCStr,
@@ -244,7 +244,7 @@ export append_minkey
 function append_maxkey(bsonArray::BSONArray)
     keyCStr = bytestring(string(length(bsonArray)))
     ccall(
-        (:bson_append_maxkey, BSON_LIB),
+        (:bson_append_maxkey, libbson),
         Bool, (Ptr{Void}, Ptr{Uint8}, Cint),
         bsonArray._wrap_,
         keyCStr,
@@ -272,7 +272,7 @@ export vector
 
 function destroy(bsonArray::BSONArray)
     ccall(
-        (:bson_destroy, BSON_LIB),
+        (:bson_destroy, libbson),
         Void, (Ptr{Void},),
         bsonArray._wrap_
         )
