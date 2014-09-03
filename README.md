@@ -12,16 +12,8 @@ License
 This software is licensed under the simplified BSD license; see the file LICENSE.md for details.
 
 
-Installing
-----------
-
-You must have libbson installed; see https://github.com/mongodb/libbson for details.
-
-
-Getting Started
+Example Usage
 ---------------
-
-Example usage:
 
     using LibBSON
 
