@@ -1,6 +1,6 @@
 module LibBSON
 
-const BSON_LIB = "libbson-1.0"
+const BSON_LIB = "libbson"
 
 LIBBSON_VERSION = VersionNumber(
     ccall((:bson_get_major_version, BSON_LIB), Cint, ()),
