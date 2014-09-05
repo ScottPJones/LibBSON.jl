@@ -86,6 +86,15 @@ Base.getindex(bsonArray::BSONArray, key::Integer) = begin
     value(bsonIter)
 end
 
+# Associative collection
+
+Base.get!(bsonObject::BSONObject, key::String, default) = begin
+    iter = BSONIter(bsonObject, key)
+    iter.done || return value(iter)
+    append(bsonObject, key, default)
+    return default
+end
+
 # Iterator
 
 start(bsonObject::BSONObject) = begin
@@ -139,6 +148,9 @@ function value_type(bsonIter::BSONIter)
         bsonIter._wrap_
         )
 end
+
+done(bsonIter::BSONIter) = bsonIter.isDone
+export done
 
 function value(bsonIter::BSONIter)
     ty = value_type(bsonIter)
@@ -207,6 +219,7 @@ function value(bsonIter::BSONIter)
         error("unhandled BSONType $ty")
     end
 end
+export value
 
 function next!(bsonIter::BSONIter)
     bsonIter.done = !ccall(
