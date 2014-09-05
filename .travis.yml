@@ -18,3 +18,5 @@ script:
   - julia -e 'Pkg.clone(pwd()); Pkg.build("LibBSON")'
   - julia -e 'Pkg.add("FactCheck"); Pkg.add("BinDeps")'
   - julia -e 'Pkg.test("LibBSON")'
+after_success:
+- if [ $JULIAVERSION = "juliareleases" ]; then julia -e 'cd(Pkg.dir("LibBSON")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'; fi
