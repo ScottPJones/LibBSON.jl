@@ -17,4 +17,4 @@ script:
   - julia -e 'Pkg.init()'
   - julia -e 'Pkg.clone(pwd()); Pkg.build("LibBSON")'
   - julia -e 'Pkg.add("FactCheck"); Pkg.add("BinDeps")'
-  - julia test/runtests.jl
+  - julia -e 'Pkg.test("LibBSON")'
