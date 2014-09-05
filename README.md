@@ -1,10 +1,9 @@
-[![Build Status](https://travis-ci.org/pzion/LibBSON.jl.svg?branch=master)](https://travis-ci.org/pzion/LibBSON.jl)
-
 LibBSON.jl
 ==========
 
 [libbson](https://github.com/mongodb/libbson) bindings for [The Julia Language](http://julialang.org/)
 
+[![Build Status](https://api.travis-ci.org/pzion/LibBSON.jl.svg?branch=master)](https://travis-ci.org/pzion/LibBSON.jl)
 
 License
 -------
