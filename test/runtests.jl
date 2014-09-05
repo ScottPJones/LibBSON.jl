@@ -65,3 +65,10 @@ facts("BSONArray") do
     @fact string(bsonArray) => "[ null, true, 42, 3.141000, \"Hello, Jérôme\", null, { \"\$minKey\" : 1 }, { \"\$maxKey\" : 1 }, \"symbol\" ]"
     @fact vector(bsonArray) => {nothing,true,42,3.141,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol"}
 end
+
+facts("BSONObject: get!") do
+    bsonObject = BSONObject()
+    @fact_throws bsonObject["foo"]
+    @fact get!(bsonObject, "foo", true) => true
+    @fact get!(bsonObject, "foo", true) => true
+end
