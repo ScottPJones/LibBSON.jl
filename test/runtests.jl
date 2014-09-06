@@ -7,6 +7,7 @@ facts("BSONOID") do
     @fact typeof(hash(oid)) => Uint
     oid2 = BSONOID()
     @fact (oid == oid2) => false
+    @fact string(BSONOID("540b628bca2e9b0d4e7dfa61")) => "540b628bca2e9b0d4e7dfa61"
 end
 
 facts("BSONObject") do
@@ -28,6 +29,10 @@ facts("BSONObject") do
     @fact length(bsonObject) => 11
     @fact string(bsonObject) => "{ \"string\" : \"Hello, Jérôme\", \"anotherNull\" : null, \"null\" : null, \"regularSymbol\" : \"symbol\", \"bool\" : true, \"int\" : 42, \"minkey\" : { \"\$minKey\" : 1 }, \"maxkey\" : { \"\$maxKey\" : 1 }, \"array\" : [ \"hello\", { \"foo\" : [ 56, false ] } ], \"subdict\" : { \"key\" : \"value\" }, \"double\" : 3.141000 }"
     @fact dict(bsonObject) => {"string"=>"Hello, Jérôme","anotherNull"=>nothing,"null"=>nothing,"regularSymbol"=>"symbol","bool"=>true,"int"=>42,"minkey"=>:minkey,"maxkey"=>:maxkey,"array"=>{"hello",{"foo"=>{56,false}}},"subdict"=>{"key"=>"value"},"double"=>3.141}
+    append(bsonObject, "int64", -57)
+    @fact bsonObject["int64"] => -57
+    append(bsonObject, "int32", 0xDEADBEEF)
+    @fact bsonObject["int32"] => -559038737
 
     context("BSONObject with OID") do
         oid = BSONOID()
@@ -64,6 +69,14 @@ facts("BSONArray") do
     @fact length(bsonArray) => 9
     @fact string(bsonArray) => "[ null, true, 42, 3.141000, \"Hello, Jérôme\", null, { \"\$minKey\" : 1 }, { \"\$maxKey\" : 1 }, \"symbol\" ]"
     @fact vector(bsonArray) => {nothing,true,42,3.141,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol"}
+    append(bsonArray, BSONArray([false]))
+    append(bsonArray, -67)
+    append(bsonArray, ["hello", 6.7])
+    @fact vector(bsonArray) => {nothing,true,42,3.141,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol",{false},-67,{"hello",6.7}}
+
+    bsonArray = BSONArray()
+    append(bsonArray, BSONOID())
+    @fact length(bsonArray) => 1
 end
 
 facts("BSONObject: get!") do

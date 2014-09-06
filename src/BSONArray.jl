@@ -19,22 +19,6 @@ type BSONArray
         return bsonArray
     end
 
-    BSONArray(jsonString::String) = begin
-        jsonCStr = bytestring(jsonString)
-        bsonError = BSONError()
-        _wrap_ = ccall(
-            (:bson_new_from_json, libbson),
-            Ptr{Void}, (Ptr{Uint8}, Csize_t, Ptr{Uint8}),
-            jsonCStr,
-            length(jsonCStr),
-            bsonError._wrap_
-            )
-        _wrap_ != C_NULL || error(bsonError)
-        bsonArray = new(_wrap_)
-        finalizer(bsonArray, destroy)
-        return bsonArray
-    end
-
     BSONArray(data::Ptr{Uint8}, length::Integer) = begin
         buffer = Array(Uint8, 128)
         ccall(
@@ -102,14 +86,25 @@ function append(bsonArray::BSONArray, val::Real)
 end
 function append(bsonArray::BSONArray, val::BSONArray)
     keyCStr = bytestring(string(length(bsonArray)))
+    childBuffer = Array(Uint8, 128)
     ccall(
-        (:bson_append_document, libbson),
-        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Uint8}),
+        (:bson_append_array_begin, libbson),
+        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Ptr{Void}),
         bsonArray._wrap_,
         keyCStr,
         length(keyCStr),
-        val._wrap_
-        ) || error("libBSON: overflow")
+        childBuffer
+        ) || error("bson_append_array_begin: failure")
+    childBSONArray = BSONArray(convert(Ptr{Void}, childBuffer))
+    for element in val
+        append(childBSONArray, element)
+    end
+    ccall(
+        (:bson_append_array_end, libbson),
+        Bool, (Ptr{Void}, Ptr{Void}),
+        bsonArray._wrap_,
+        childBuffer
+        ) || error("bson_append_array_end: failure")
 end
 function append(bsonArray::BSONArray, val::Union(Int8, Uint8, Int16, Uint16, Int32, Uint32))
     keyCStr = bytestring(string(length(bsonArray)))
@@ -204,7 +199,7 @@ function append(bsonArray::BSONArray, val::Vector)
         length(keyCStr),
         childBuffer
         ) || error("bson_append_array_begin: failure")
-    childBSONArray = BSON(convert(Ptr{Void}, childBuffer))
+    childBSONArray = BSONArray(convert(Ptr{Void}, childBuffer))
     for element in val
         append(childBSONArray, element)
     end
