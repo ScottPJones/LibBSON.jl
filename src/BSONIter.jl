@@ -192,11 +192,14 @@ function value(bsonIter::BSONIter)
             C_NULL
             )))
     elseif ty == BSON_TYPE_OID
-        return BSONOID(ccall(
-            (:bson_iter_oid, libbson),
-            Ptr{Void}, (Ptr{Uint8},),
-            bsonIter._wrap_
-            ))
+        return BSONOID(
+            ccall(
+                (:bson_iter_oid, libbson),
+                Ptr{Void}, (Ptr{Uint8},),
+                bsonIter._wrap_
+                ),
+            bsonIter
+            )
     elseif ty == BSON_TYPE_DOCUMENT
         length = Array(Uint32, 1)
         data = Array(Ptr{Uint8}, 1)
@@ -205,7 +208,7 @@ function value(bsonIter::BSONIter)
             Ptr{Void}, (Ptr{Uint8}, Ptr{Uint32}, Ptr{Ptr{Uint8}}),
             bsonIter._wrap_, length, data
             )
-        return BSONObject(data[1], length[1])
+        return BSONObject(data[1], length[1], bsonIter)
     elseif ty == BSON_TYPE_ARRAY
         length = Array(Uint32, 1)
         data = Array(Ptr{Uint8}, 1)
@@ -214,7 +217,7 @@ function value(bsonIter::BSONIter)
             Ptr{Void}, (Ptr{Uint8}, Ptr{Uint32}, Ptr{Ptr{Uint8}}),
             bsonIter._wrap_, length, data
             )
-        return BSONArray(data[1], length[1])
+        return BSONArray(data[1], length[1], bsonIter)
     else
         error("unhandled BSONType $ty")
     end

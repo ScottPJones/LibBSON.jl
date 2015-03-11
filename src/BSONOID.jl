@@ -1,5 +1,6 @@
 immutable BSONOID
     _wrap_::Ptr{Void}
+    _ref_::Any
 
     BSONOID() = begin
         buffer = Array(Uint8, 12)
@@ -9,7 +10,7 @@ immutable BSONOID
             buffer,
             C_NULL
             )
-        new(buffer)
+        new(buffer, buffer)
     end
 
     BSONOID(str::String) = begin
@@ -30,10 +31,10 @@ immutable BSONOID
             buffer,
             cstr
             )
-        new(buffer)
+        new(buffer, buffer)
     end
 
-    BSONOID(_wrap_::Ptr{Void}) = new(_wrap_)
+    BSONOID(_wrap_::Ptr{Void}, _ref_::Any) = new(_wrap_, _ref_)
 end
 export BSONOID
 

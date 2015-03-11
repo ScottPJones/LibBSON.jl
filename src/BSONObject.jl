@@ -1,12 +1,13 @@
 type BSONObject
     _wrap_::Ptr{Void}
+    _owner_::Any
 
     BSONObject() = begin
         _wrap_ = ccall(
             (:bson_new, libbson),
             Ptr{Void}, ()
             )
-        bsonObject = new(_wrap_)
+        bsonObject = new(_wrap_, None)
         finalizer(bsonObject, destroy)
         return bsonObject
     end
@@ -30,22 +31,22 @@ type BSONObject
             bsonError._wrap_
             )
         _wrap_ != C_NULL || error(bsonError)
-        bsonObject = new(_wrap_)
+        bsonObject = new(_wrap_, None)
         finalizer(bsonObject, destroy)
         return bsonObject
     end
 
-    BSONObject(data::Ptr{Uint8}, length::Integer) = begin
+    BSONObject(data::Ptr{Uint8}, length::Integer, _ref_::Any) = begin
         buffer = Array(Uint8, 128)
         ccall(
             (:bson_init_static, libbson),
             Bool, (Ptr{Void}, Ptr{Uint8}, Uint32),
             buffer, data, length
             ) || error("bson_init_static: failure")
-        new(buffer)
+        new(buffer, (_ref_, buffer))
     end
 
-    BSONObject(_wrap_::Ptr{Void}) = new(_wrap_)
+    BSONObject(_wrap_::Ptr{Void}, _owner_::Any) = new(_wrap_, _owner_)
 end
 export BSONObject
 
@@ -183,7 +184,7 @@ function append(bsonObject::BSONObject, key::String, val::Dict)
         length(keyCStr),
         childBuffer
         ) || error("bson_append_document_begin: failure")
-    childBSON = BSONObject(convert(Ptr{Void}, childBuffer))
+    childBSON = BSONObject(convert(Ptr{Void}, childBuffer), childBuffer)
     for (k, v) in val
         append(childBSON, k, v)
     end
@@ -205,7 +206,7 @@ function append(bsonObject::BSONObject, key::String, val::Vector)
         length(keyCStr),
         childBuffer
         ) || error("bson_append_array_begin: failure")
-    childBSONArray = BSONArray(convert(Ptr{Void}, childBuffer))
+    childBSONArray = BSONArray(convert(Ptr{Void}, childBuffer), childBuffer)
     for element in val
         append(childBSONArray, element)
     end
