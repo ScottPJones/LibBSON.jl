@@ -117,7 +117,7 @@ function append(bsonObject::BSONObject, key::String, val::Union(Int8, Uint8, Int
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_int32, libbson),
-        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Int32),
+        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Cint),
         bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
@@ -128,7 +128,7 @@ function append(bsonObject::BSONObject, key::String, val::Union(Int64, Uint64))
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_int64, libbson),
-        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Int64),
+        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Clong),
         bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
