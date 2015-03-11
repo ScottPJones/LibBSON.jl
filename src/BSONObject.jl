@@ -113,7 +113,7 @@ function append(bsonObject::BSONObject, key::String, val::BSONObject)
         val._wrap_
         ) || error("libBSON: overflow")
 end
-function append(bsonObject::BSONObject, key::String, val::Union(Int8, Uint8, Int16, Uint16, Int32, Uint32))
+function append(bsonObject::BSONObject, key::String, val::Int8)
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_int32, libbson),
@@ -124,7 +124,73 @@ function append(bsonObject::BSONObject, key::String, val::Union(Int8, Uint8, Int
         val
         ) || error("libBSON: overflow")
 end
-function append(bsonObject::BSONObject, key::String, val::Union(Int64, Uint64))
+function append(bsonObject::BSONObject, key::String, val::Uint8)
+    keyCStr = bytestring(key)
+    ccall(
+        (:bson_append_int32, libbson),
+        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Cint),
+        bsonObject._wrap_,
+        keyCStr,
+        length(keyCStr),
+        val
+        ) || error("libBSON: overflow")
+end
+function append(bsonObject::BSONObject, key::String, val::Int16)
+    keyCStr = bytestring(key)
+    ccall(
+        (:bson_append_int32, libbson),
+        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Cint),
+        bsonObject._wrap_,
+        keyCStr,
+        length(keyCStr),
+        val
+        ) || error("libBSON: overflow")
+end
+function append(bsonObject::BSONObject, key::String, val::Uint16)
+    keyCStr = bytestring(key)
+    ccall(
+        (:bson_append_int32, libbson),
+        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Cint),
+        bsonObject._wrap_,
+        keyCStr,
+        length(keyCStr),
+        val
+        ) || error("libBSON: overflow")
+end
+function append(bsonObject::BSONObject, key::String, val::Int32)
+    keyCStr = bytestring(key)
+    ccall(
+        (:bson_append_int32, libbson),
+        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Cint),
+        bsonObject._wrap_,
+        keyCStr,
+        length(keyCStr),
+        val
+        ) || error("libBSON: overflow")
+end
+function append(bsonObject::BSONObject, key::String, val::Uint32)
+    keyCStr = bytestring(key)
+    ccall(
+        (:bson_append_int32, libbson),
+        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Cint),
+        bsonObject._wrap_,
+        keyCStr,
+        length(keyCStr),
+        val
+        ) || error("libBSON: overflow")
+end
+function append(bsonObject::BSONObject, key::String, val::Int64)
+    keyCStr = bytestring(key)
+    ccall(
+        (:bson_append_int64, libbson),
+        Bool, (Ptr{Void}, Ptr{Uint8}, Cint, Clong),
+        bsonObject._wrap_,
+        keyCStr,
+        length(keyCStr),
+        val
+        ) || error("libBSON: overflow")
+end
+function append(bsonObject::BSONObject, key::String, val::Uint64)
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_int64, libbson),
