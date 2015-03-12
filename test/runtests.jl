@@ -31,8 +31,8 @@ facts("BSONObject") do
     @fact dict(bsonObject) => {"string"=>"Hello, Jérôme","anotherNull"=>nothing,"null"=>nothing,"regularSymbol"=>"symbol","bool"=>true,"int"=>42,"minkey"=>:minkey,"maxkey"=>:maxkey,"array"=>{"hello",{"foo"=>{56,false}}},"subdict"=>{"key"=>"value"},"double"=>3.141}
     append(bsonObject, "int64", -57)
     @fact bsonObject["int64"] => -57
-    append(bsonObject, "int32", 0xDEADBEEF)
-    @fact bsonObject["int32"] => -559038737
+    append(bsonObject, "int32", 0x12345678)
+    @fact bsonObject["int32"] => 305419896
 
     context("BSONObject with OID") do
         oid = BSONOID()
