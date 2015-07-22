@@ -7,17 +7,17 @@ type BSONError
 end
 export BSONError
 
-const domainDescs = {1 => "JSON", 2 => "READER"}
-const errorDescs = {
-    1 => {
+const domainDescs = Obj(1 => "JSON", 2 => "READER")
+const errorDescs = Obj(
+    1 => Obj(
         1 => "READ_CORRUPT_JS",
         2 => "READ_INVALID_PARAM",
         3 => "READ_CB_FAILURE",
-        },
-    2 => {
+        ),
+    2 => Obj(
         1 => "BADFD",
-        },
-    }
+        ),
+    )
 
 convert(::Type{String}, bsonError::BSONError) = begin
     uint32s = reinterpret(Uint32, bsonError._wrap_)
