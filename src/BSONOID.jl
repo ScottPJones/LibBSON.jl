@@ -10,7 +10,7 @@ immutable BSONOID
             buffer,
             C_NULL
             )
-            r = Base.unsafe_convert(Ptr{Uint8}, buffer)
+            r = Compat.unsafe_convert(Ptr{Uint8}, buffer)
         new(r, r)
     end
 
@@ -32,7 +32,7 @@ immutable BSONOID
             buffer,
             cstr
             )
-            r = Base.unsafe_convert(Ptr{Uint8}, buffer)
+            r = Compat.unsafe_convert(Ptr{Uint8}, buffer)
         new(r, r)
     end
 
@@ -65,7 +65,7 @@ function convert(::Type{String}, oid::BSONOID)
         oid._wrap_,
         cstr
         )
-    return bytestring(Base.unsafe_convert(Ptr{Uint8}, cstr))
+    return bytestring(Compat.unsafe_convert(Ptr{Uint8}, cstr))
 end
 export convert
 

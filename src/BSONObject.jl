@@ -43,7 +43,7 @@ type BSONObject
             Bool, (Ptr{Void}, Ptr{Uint8}, Uint32),
             buffer, data, length
             ) || error("bson_init_static: failure")
-        b = Base.unsafe_convert(Ptr{Void}, buffer)
+        b = Compat.unsafe_convert(Ptr{Void}, buffer)
         new(b, (_ref_, b))
     end
 
@@ -185,7 +185,7 @@ function append(bsonObject::BSONObject, key::String, val::Dict)
         length(keyCStr),
         childBuffer
         ) || error("bson_append_document_begin: failure")
-    childBSON = BSONObject(Base.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
+    childBSON = BSONObject(Compat.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
     for (k, v) in val
         append(childBSON, k, v)
     end
@@ -207,7 +207,7 @@ function append(bsonObject::BSONObject, key::String, val::Vector)
         length(keyCStr),
         childBuffer
         ) || error("bson_append_array_begin: failure")
-    childBSONArray = BSONArray(Base.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
+    childBSONArray = BSONArray(Compat.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
     for element in val
         append(childBSONArray, element)
     end

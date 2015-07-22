@@ -1,6 +1,4 @@
-using FactCheck, LibBSON
-
-using LibBSON: Obj
+using FactCheck, LibBSON, Compat
 
 facts("BSONOID") do
     oid = BSONOID()
@@ -13,7 +11,7 @@ facts("BSONOID") do
 end
 
 facts("BSONObject") do
-    bsonObject = BSONObject(Obj(
+    bsonObject = BSONObject(@compat Dict{Any,Any}(
         "null"=>nothing,
         "bool"=>true,
         "int"=>42,
@@ -23,14 +21,14 @@ facts("BSONObject") do
         "minkey"=>:minkey,
         "maxkey"=>:maxkey,
         "regularSymbol"=>:symbol,
-        "subdict"=> Obj(
+        "subdict"=> (@compat Dict{Any,Any}(
             "key"=>"value"
-            ),
-        "array"=> Any["hello", Obj("foo" => Any[56, false])]
+            )),
+        "array"=> Any["hello", (@compat Dict{Any,Any}("foo" => Any[56, false]))]
         ))
     @fact length(bsonObject) => 11
     @fact string(bsonObject) => "{ \"string\" : \"Hello, Jérôme\", \"anotherNull\" : null, \"null\" : null, \"regularSymbol\" : \"symbol\", \"bool\" : true, \"int\" : 42, \"minkey\" : { \"\$minKey\" : 1 }, \"maxkey\" : { \"\$maxKey\" : 1 }, \"array\" : [ \"hello\", { \"foo\" : [ 56, false ] } ], \"subdict\" : { \"key\" : \"value\" }, \"double\" : 3.141000 }"
-    @fact dict(bsonObject) => Obj("string"=>"Hello, Jérôme","anotherNull"=>nothing,"null"=>nothing,"regularSymbol"=>"symbol","bool"=>true,"int"=>42,"minkey"=>:minkey,"maxkey"=>:maxkey,"array"=>Any["hello",Obj("foo"=>Any[56,false])],"subdict"=>Obj("key"=>"value"),"double"=>3.141)
+    @fact dict(bsonObject) => @compat Dict{Any,Any}("string"=>"Hello, Jérôme","anotherNull"=>nothing,"null"=>nothing,"regularSymbol"=>"symbol","bool"=>true,"int"=>42,"minkey"=>:minkey,"maxkey"=>:maxkey,"array"=>Any["hello",(@compat Dict{Any,Any}("foo"=>Any[56,false]))],"subdict"=>(@compat Dict{Any,Any}("key"=>"value")),"double"=>3.141)
     append(bsonObject, "int64", -57)
     @fact bsonObject["int64"] => -57
     append(bsonObject, "int32", 0x12345678)
@@ -38,7 +36,7 @@ facts("BSONObject") do
 
     context("BSONObject with OID") do
         oid = BSONOID()
-        bsonObject = BSONObject(Obj("oid" => oid))
+        bsonObject = BSONObject(@compat Dict{Any,Any}("oid" => oid))
         @fact (length(string(bsonObject)) > 0) => true
         @fact (bsonObject["oid"] == oid) => true
     end
@@ -49,8 +47,8 @@ facts("BSONObject") do
     end
 
     context("BSONObject containing BSONObject") do
-        subBSONObject = BSONObject(Obj("key"=>"value"))
-        bsonObject = BSONObject(Obj("sub"=>subBSONObject))
+        subBSONObject = BSONObject(@compat Dict{Any,Any}("key"=>"value"))
+        bsonObject = BSONObject(@compat Dict{Any,Any}("sub"=>subBSONObject))
         @fact string(bsonObject) => "{ \"sub\" : { \"key\" : \"value\" } }"
         @fact string(bsonObject["sub"]) => "{ \"key\" : \"value\" }"
     end

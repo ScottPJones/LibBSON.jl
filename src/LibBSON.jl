@@ -21,8 +21,6 @@ import Base.hash,
     Base.string,
     Base.length
 
-typealias Obj @compat Dict{Any,Any}
-
 include("BSONOID.jl")
 include("BSONError.jl")
 include("BSONObject.jl")
