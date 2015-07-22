@@ -1,22 +1,17 @@
-language: cpp
-compiler:
-  - clang
+language: julia
 notifications:
   email: peter.zion@gmail.com
-env:
-  matrix:
-    - JULIAVERSION="juliareleases"
-    - JULIAVERSION="julianightlies"
+julia:
+    - release
+    - nightly
 before_install:
-  - sudo add-apt-repository ppa:staticfloat/julia-deps -y
-  - sudo add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
   - sudo apt-get update -qq -y
-  - sudo apt-get install libpcre3-dev julia -y
+  - sudo apt-get install libpcre3-dev -y
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
   - julia -e 'Pkg.init()'
   - julia -e 'Pkg.clone(pwd()); Pkg.build("LibBSON")'
-  - julia -e 'Pkg.add("FactCheck"); Pkg.add("BinDeps")'
+  - julia -e 'Pkg.add("FactCheck"); Pkg.add("BinDeps"); Pkg.checkout("Compat")'
   - julia -e 'Pkg.test("LibBSON", coverage=true)'
 after_success:
-- if [ $JULIAVERSION = "juliareleases" ]; then julia -e 'cd(Pkg.dir("LibBSON")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'; fi
+- julia -e 'cd(Pkg.dir("LibBSON")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'

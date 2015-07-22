@@ -1,5 +1,7 @@
 module LibBSON
 
+using Compat
+
 include( "../deps/deps.jl")
 
 LIBBSON_VERSION = VersionNumber(
@@ -17,7 +19,6 @@ import Base.hash,
     Base.next,
     Base.done,
     Base.string,
-    Base.dict,
     Base.length
 
 include("BSONOID.jl")
