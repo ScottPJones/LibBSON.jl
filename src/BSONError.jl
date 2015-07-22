@@ -7,17 +7,15 @@ type BSONError
 end
 export BSONError
 
-const domainDescs = @compat Dict{Int64,String}(1 => "JSON", 2 => "READER")
-const errorDescs = @compat Dict{Int64,String}(
-    1 => @compat Dict{Int64,String}(
+const domainDescs = Obj(1 => "JSON", 2 => "READER")
+const errorDescs = Obj(
+    1 => Obj(
         1 => "READ_CORRUPT_JS",
         2 => "READ_INVALID_PARAM",
-        3 => "READ_CB_FAILURE",
-        ),
-    2 => @compat Dict{Int64,String}(
-        1 => "BADFD",
-        ),
-    )
+        3 => "READ_CB_FAILURE"
+    ),
+    2 => Obj(1 => "BADFD")
+)
 
 convert(::Type{String}, bsonError::BSONError) = begin
     uint32s = reinterpret(Uint32, bsonError._wrap_)
