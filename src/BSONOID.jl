@@ -40,6 +40,7 @@ immutable BSONOID
 end
 export BSONOID
 
+import Base.==
 ==(lhs::BSONOID, rhs::BSONOID) = ccall(
     (:bson_oid_equal, libbson),
     Bool, (Ptr{Void}, Ptr{Void}),
