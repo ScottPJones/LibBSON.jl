@@ -42,6 +42,7 @@ function convert(::Type{String}, bsonArray::BSONArray)
         bsonArray._wrap_,
         C_NULL
         )
+    cstr == C_NULL && return ""
     result = bytestring(cstr)
     ccall(
         (:bson_free, libbson),
