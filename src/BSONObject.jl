@@ -147,6 +147,7 @@ function append(bsonObject::BSONObject, key::String, val::BSONOID)
         val._wrap_
         ) || error("libBSON: overflow")
 end
+append(bsonObject::BSONObject, key::String, val::Char) = append(bsonObject, key, string(val))
 function append(bsonObject::BSONObject, key::String, val::String)
     keyCStr = bytestring(key)
     valUTF8 = utf8(val)
