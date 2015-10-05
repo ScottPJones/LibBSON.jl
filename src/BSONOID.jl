@@ -3,36 +3,36 @@ immutable BSONOID
     _ref_::Any
 
     BSONOID() = begin
-        buffer = Array(Uint8, 12)
+        buffer = Array(UInt8, 12)
         ccall(
             (:bson_oid_init, libbson),
-            Void, (Ptr{Uint8}, Ptr{Void}),
+            Void, (Ptr{UInt8}, Ptr{Void}),
             buffer,
             C_NULL
             )
-            r = Compat.unsafe_convert(Ptr{Uint8}, buffer)
+            r = Compat.unsafe_convert(Ptr{UInt8}, buffer)
         new(r, r)
     end
 
-    BSONOID(str::String) = begin
+    BSONOID(str::AbstractString) = begin
         cstr = bytestring(str)
 
         isValid = ccall(
             (:bson_oid_is_valid, libbson),
-            Bool, (Ptr{Uint8}, Csize_t),
+            Bool, (Ptr{UInt8}, Csize_t),
             cstr,
             length(cstr)
             )
         isValid || error("'" * str * "': not a valid BSONOID string")
 
-        buffer = Array(Uint8, 12)
+        buffer = Array(UInt8, 12)
         ccall(
             (:bson_oid_init_from_string, libbson),
-            Void, (Ptr{Uint8}, Ptr{Uint8}),
+            Void, (Ptr{UInt8}, Ptr{UInt8}),
             buffer,
             cstr
             )
-            r = Compat.unsafe_convert(Ptr{Uint8}, buffer)
+            r = Compat.unsafe_convert(Ptr{UInt8}, buffer)
         new(r, r)
     end
 
@@ -48,30 +48,30 @@ import Base.==
     )
 export ==
 
-hash(oid::BSONOID, h::Uint) = hash(
+hash(oid::BSONOID, h::UInt) = hash(
     ccall(
         (:bson_oid_hash, libbson),
-        Uint32, (Ptr{Uint8},),
+        UInt32, (Ptr{UInt8},),
         oid._wrap_
         ),
     h
     )
 export hash
 
-function convert(::Type{String}, oid::BSONOID)
-    cstr = Array(Uint8, 25)
+function convert(::Type{AbstractString}, oid::BSONOID)
+    cstr = Array(UInt8, 25)
     ccall(
         (:bson_oid_to_string, libbson),
-        Void, (Ptr{Uint8}, Ptr{Uint8}),
+        Void, (Ptr{UInt8}, Ptr{UInt8}),
         oid._wrap_,
         cstr
         )
-    return bytestring(Compat.unsafe_convert(Ptr{Uint8}, cstr))
+    return bytestring(Compat.unsafe_convert(Ptr{UInt8}, cstr))
 end
 export convert
 
-string(oid::BSONOID) = convert(String, oid)
+string(oid::BSONOID) = convert(AbstractString, oid)
 export string
 
-show(io::IO, oid::BSONOID) = print(io, "BSONOID($(convert(String, oid)))")
+show(io::IO, oid::BSONOID) = print(io, "BSONOID($(convert(AbstractString, oid)))")
 export show
