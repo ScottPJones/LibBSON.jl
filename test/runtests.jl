@@ -15,7 +15,7 @@ facts("BSONObject") do
         "null"=>nothing,
         "bool"=>true,
         "int"=>42,
-        "double"=>3.141,
+        "double"=>3.141000,
         "string"=>"Hello, Jérôme",
         "anotherNull"=>:null,
         "minkey"=>:minkey,
@@ -27,8 +27,8 @@ facts("BSONObject") do
         "array"=> Any["hello", (@compat Dict{Any,Any}("foo" => Any[56, false]))]
         ))
     @fact length(bsonObject) --> 11
-    @fact string(bsonObject) --> "{ \"string\" : \"Hello, Jérôme\", \"anotherNull\" : null, \"null\" : null, \"regularSymbol\" : \"symbol\", \"bool\" : true, \"int\" : 42, \"minkey\" : { \"\$minKey\" : 1 }, \"maxkey\" : { \"\$maxKey\" : 1 }, \"array\" : [ \"hello\", { \"foo\" : [ 56, false ] } ], \"subdict\" : { \"key\" : \"value\" }, \"double\" : 3.141 }"
-    @fact dict(bsonObject) --> @compat Dict{Any,Any}("string"=>"Hello, Jérôme","anotherNull"=>nothing,"null"=>nothing,"regularSymbol"=>"symbol","bool"=>true,"int"=>42,"minkey"=>:minkey,"maxkey"=>:maxkey,"array"=>Any["hello",(@compat Dict{Any,Any}("foo"=>Any[56,false]))],"subdict"=>(@compat Dict{Any,Any}("key"=>"value")),"double"=>3.141)
+    @fact string(bsonObject) --> "{ \"string\" : \"Hello, Jérôme\", \"anotherNull\" : null, \"null\" : null, \"regularSymbol\" : \"symbol\", \"bool\" : true, \"int\" : 42, \"minkey\" : { \"\$minKey\" : 1 }, \"maxkey\" : { \"\$maxKey\" : 1 }, \"array\" : [ \"hello\", { \"foo\" : [ 56, false ] } ], \"subdict\" : { \"key\" : \"value\" }, \"double\" : 3.141000 }"
+    @fact dict(bsonObject) --> @compat Dict{Any,Any}("string"=>"Hello, Jérôme","anotherNull"=>nothing,"null"=>nothing,"regularSymbol"=>"symbol","bool"=>true,"int"=>42,"minkey"=>:minkey,"maxkey"=>:maxkey,"array"=>Any["hello",(@compat Dict{Any,Any}("foo"=>Any[56,false]))],"subdict"=>(@compat Dict{Any,Any}("key"=>"value")),"double"=>3.141000)
     append(bsonObject, "int64", -57)
     @fact bsonObject["int64"] --> -57
     append(bsonObject, "int32", 0x12345678)
@@ -43,7 +43,7 @@ facts("BSONObject") do
 
     context("BSONObject from JSON") do
         @fact_throws BSONObject("invalid JSON")
-        @fact string(BSONObject("{\"pi\": 3.141}")) --> "{ \"pi\" : 3.141 }"
+        @fact string(BSONObject("{\"pi\": 3.141000}")) --> "{ \"pi\" : 3.141000 }"
     end
 
     context("BSONObject containing BSONObject") do
@@ -59,7 +59,7 @@ facts("BSONArray") do
         nothing,
         true,
         42,
-        3.141,
+        3.141000,
         "Hello, Jérôme",
         :null,
         :minkey,
@@ -67,12 +67,12 @@ facts("BSONArray") do
         :symbol
         ])
     @fact length(bsonArray) --> 9
-    @fact string(bsonArray) --> "[ null, true, 42, 3.141, \"Hello, Jérôme\", null, { \"\$minKey\" : 1 }, { \"\$maxKey\" : 1 }, \"symbol\" ]"
-    @fact vector(bsonArray) --> Any[nothing,true,42,3.141,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol"]
+    @fact string(bsonArray) --> "[ null, true, 42, 3.141000, \"Hello, Jérôme\", null, { \"\$minKey\" : 1 }, { \"\$maxKey\" : 1 }, \"symbol\" ]"
+    @fact vector(bsonArray) --> Any[nothing,true,42,3.141000,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol"]
     append(bsonArray, BSONArray([false]))
     append(bsonArray, -67)
     append(bsonArray, ["hello", 6.7])
-    @fact vector(bsonArray) --> Any[nothing,true,42,3.141,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol",Any[false],-67,["hello",6.7]]
+    @fact vector(bsonArray) --> Any[nothing,true,42,3.141000,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol",Any[false],-67,["hello",6.7]]
 
     bsonArray = BSONArray()
     append(bsonArray, BSONOID())
