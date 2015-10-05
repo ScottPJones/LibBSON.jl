@@ -1,35 +1,35 @@
 type BSONIter
-    _wrap_::Vector{Uint8}
+    _wrap_::Vector{UInt8}
     done::Bool
 
     function BSONIter(bsonObject::BSONObject)
-        bsonIter = new(Array(Uint8, 128), false)
+        bsonIter = new(Array(UInt8, 128), false)
         ccall(
             (:bson_iter_init, libbson),
-            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            Bool, (Ptr{UInt8}, Ptr{UInt8}),
             bsonIter._wrap_,
             bsonObject._wrap_
             ) || error("BSONIter(): failure")
         bsonIter.done = !ccall(
             (:bson_iter_next, libbson),
-            Bool, (Ptr{Uint8}, ),
+            Bool, (Ptr{UInt8}, ),
             bsonIter._wrap_
             )
         return bsonIter
     end
 
-    function BSONIter(bsonObject::BSONObject, key::String)
-        bsonIter = new(Array(Uint8, 128), false)
+    function BSONIter(bsonObject::BSONObject, key::AbstractString)
+        bsonIter = new(Array(UInt8, 128), false)
         ccall(
             (:bson_iter_init, libbson),
-            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            Bool, (Ptr{UInt8}, Ptr{UInt8}),
             bsonIter._wrap_,
             bsonObject._wrap_
             ) || error("BSONIter(): failure")
         keyCStr = bytestring(key)
         bsonIter.done = !ccall(
             (:bson_iter_find, libbson),
-            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            Bool, (Ptr{UInt8}, Ptr{UInt8}),
             bsonIter._wrap_,
             keyCStr
             )
@@ -37,33 +37,33 @@ type BSONIter
     end
 
     function BSONIter(bsonArray::BSONArray)
-        bsonIter = new(Array(Uint8, 128), false)
+        bsonIter = new(Array(UInt8, 128), false)
         ccall(
             (:bson_iter_init, libbson),
-            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            Bool, (Ptr{UInt8}, Ptr{UInt8}),
             bsonIter._wrap_,
             bsonArray._wrap_
             ) || error("BSONIter(): failure")
         bsonIter.done = !ccall(
             (:bson_iter_next, libbson),
-            Bool, (Ptr{Uint8}, ),
+            Bool, (Ptr{UInt8}, ),
             bsonIter._wrap_
             )
         return bsonIter
     end
 
     function BSONIter(bsonArray::BSONArray, key::Integer)
-        bsonIter = new(Array(Uint8, 128), false)
+        bsonIter = new(Array(UInt8, 128), false)
         ccall(
             (:bson_iter_init, libbson),
-            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            Bool, (Ptr{UInt8}, Ptr{UInt8}),
             bsonIter._wrap_,
             bsonArray._wrap_
             ) || error("BSONIter(): failure")
         keyCStr = bytestring(string(key))
         bsonIter.done = !ccall(
             (:bson_iter_find, libbson),
-            Bool, (Ptr{Uint8}, Ptr{Uint8}),
+            Bool, (Ptr{UInt8}, Ptr{UInt8}),
             bsonIter._wrap_,
             keyCStr
             )
@@ -74,7 +74,7 @@ export BSONIter
 
 # Index
 
-Base.getindex(bsonObject::BSONObject, key::String) = begin
+Base.getindex(bsonObject::BSONObject, key::AbstractString) = begin
     bsonIter = BSONIter(bsonObject, key)
     bsonIter.done && error("key not found: $(repr(key))")
     value(bsonIter)
@@ -88,7 +88,7 @@ end
 
 # Associative collection
 
-Base.get!(bsonObject::BSONObject, key::String, default) = begin
+Base.get!(bsonObject::BSONObject, key::AbstractString, default) = begin
     iter = BSONIter(bsonObject, key)
     iter.done || return value(iter)
     append(bsonObject, key, default)
@@ -133,7 +133,7 @@ function key(bsonIter::BSONIter)
     bsonIter.done && error("alredy done iteration")
     cstr = ccall(
         (:bson_iter_key, libbson),
-        Ptr{Uint8}, (Ptr{Uint8}, ),
+        Ptr{UInt8}, (Ptr{UInt8}, ),
         bsonIter._wrap_
         )
     cstr == C_NULL && error("bson_iter_key: failure")
@@ -144,7 +144,7 @@ function value_type(bsonIter::BSONIter)
     bsonIter.done && error("alredy done iteration")
     return ccall(
         (:bson_iter_type, libbson),
-        BSONType, (Ptr{Uint8}, ),
+        BSONType, (Ptr{UInt8}, ),
         bsonIter._wrap_
         )
 end
@@ -157,25 +157,25 @@ function value(bsonIter::BSONIter)
     if ty == BSON_TYPE_DOUBLE
         return ccall(
             (:bson_iter_double, libbson),
-            Cdouble, (Ptr{Uint8}, ),
+            Cdouble, (Ptr{UInt8}, ),
             bsonIter._wrap_
             )
     elseif ty == BSON_TYPE_INT32
         return ccall(
             (:bson_iter_int32, libbson),
-            Int32, (Ptr{Uint8}, ),
+            Int32, (Ptr{UInt8}, ),
             bsonIter._wrap_
             )
     elseif ty == BSON_TYPE_INT64
         return ccall(
             (:bson_iter_int64, libbson),
-            Int64, (Ptr{Uint8}, ),
+            Int64, (Ptr{UInt8}, ),
             bsonIter._wrap_
             )
     elseif ty == BSON_TYPE_BOOL
         return ccall(
             (:bson_iter_bool, libbson),
-            Bool, (Ptr{Uint8}, ),
+            Bool, (Ptr{UInt8}, ),
             bsonIter._wrap_
             )
     elseif ty == BSON_TYPE_NULL
@@ -187,7 +187,7 @@ function value(bsonIter::BSONIter)
     elseif ty == BSON_TYPE_UTF8
         return utf8(bytestring(ccall(
             (:bson_iter_utf8, libbson),
-            Ptr{Uint8}, (Ptr{Uint8}, Ptr{Uint8}),
+            Ptr{UInt8}, (Ptr{UInt8}, Ptr{UInt8}),
             bsonIter._wrap_,
             C_NULL
             )))
@@ -195,26 +195,26 @@ function value(bsonIter::BSONIter)
         return BSONOID(
             ccall(
                 (:bson_iter_oid, libbson),
-                Ptr{Void}, (Ptr{Uint8},),
+                Ptr{Void}, (Ptr{UInt8},),
                 bsonIter._wrap_
                 ),
             bsonIter
             )
     elseif ty == BSON_TYPE_DOCUMENT
-        length = Array(Uint32, 1)
-        data = Array(Ptr{Uint8}, 1)
+        length = Array(UInt32, 1)
+        data = Array(Ptr{UInt8}, 1)
         ccall(
             (:bson_iter_document, libbson),
-            Ptr{Void}, (Ptr{Uint8}, Ptr{Uint32}, Ptr{Ptr{Uint8}}),
+            Ptr{Void}, (Ptr{UInt8}, Ptr{UInt32}, Ptr{Ptr{UInt8}}),
             bsonIter._wrap_, length, data
             )
         return BSONObject(data[1], length[1], bsonIter)
     elseif ty == BSON_TYPE_ARRAY
-        length = Array(Uint32, 1)
-        data = Array(Ptr{Uint8}, 1)
+        length = Array(UInt32, 1)
+        data = Array(Ptr{UInt8}, 1)
         ccall(
             (:bson_iter_array, libbson),
-            Ptr{Void}, (Ptr{Uint8}, Ptr{Uint32}, Ptr{Ptr{Uint8}}),
+            Ptr{Void}, (Ptr{UInt8}, Ptr{UInt32}, Ptr{Ptr{UInt8}}),
             bsonIter._wrap_, length, data
             )
         return BSONArray(data[1], length[1], bsonIter)
@@ -227,7 +227,7 @@ export value
 function next!(bsonIter::BSONIter)
     bsonIter.done = !ccall(
         (:bson_iter_next, libbson),
-        Bool, (Ptr{Uint8}, ),
+        Bool, (Ptr{UInt8}, ),
         bsonIter._wrap_
         )
     bsonIter
