@@ -7,7 +7,7 @@ type BSONObject
             (:bson_new, libbson),
             Ptr{Void}, ()
             )
-        bsonObject = new(_wrap_, None)
+        bsonObject = new(_wrap_, Union{})
         finalizer(bsonObject, destroy)
         return bsonObject
     end
@@ -31,7 +31,7 @@ type BSONObject
             bsonError._wrap_
             )
         _wrap_ != C_NULL || error(bsonError)
-        bsonObject = new(_wrap_, None)
+        bsonObject = new(_wrap_, Union{})
         finalizer(bsonObject, destroy)
         return bsonObject
     end
@@ -114,7 +114,7 @@ function append(bsonObject::BSONObject, key::AbstractString, val::BSONObject)
         val._wrap_
         ) || error("libBSON: overflow")
 end
-function append(bsonObject::BSONObject, key::AbstractString, val::Union(Int8, UInt8, Int16, UInt16, Int32, UInt32))
+function append(bsonObject::BSONObject, key::AbstractString, val::Union{Int8, UInt8, Int16, UInt16, Int32, UInt32})
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_int32, libbson),
@@ -125,7 +125,7 @@ function append(bsonObject::BSONObject, key::AbstractString, val::Union(Int8, UI
         val
         ) || error("libBSON: overflow")
 end
-function append(bsonObject::BSONObject, key::AbstractString, val::Union(Int64, UInt64))
+function append(bsonObject::BSONObject, key::AbstractString, val::Union{Int64, UInt64})
     keyCStr = bytestring(key)
     ccall(
         (:bson_append_int64, libbson),
@@ -161,7 +161,7 @@ function append(bsonObject::BSONObject, key::AbstractString, val::AbstractString
         sizeof(valUTF8)
         ) || error("libBSON: overflow")
 end
-function append(bsonObject::BSONObject, key::AbstractString, val::Nothing)
+function append(bsonObject::BSONObject, key::AbstractString, val::Void)
     append_null(bsonObject, key)
 end
 function append(bsonObject::BSONObject, key::AbstractString, val::Void)
