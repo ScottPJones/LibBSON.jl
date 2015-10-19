@@ -3,7 +3,6 @@ LibBSON.jl
 
 [![Build Status](https://api.travis-ci.org/pzion/LibBSON.jl.svg?branch=master)](https://travis-ci.org/pzion/LibBSON.jl)
 [![0.4 Status](http://pkg.julialang.org/badges/LibBSON_0.4.svg)](http://pkg.julialang.org/?pkg=LibBSON)
-[![0.5 Status](http://pkg.julialang.org/badges/LibBSON_0.5.svg)](http://pkg.julialang.org/?pkg=LibBSON)
 [![Coverage Status](https://img.shields.io/coveralls/pzion/LibBSON.jl.svg)](https://coveralls.io/r/pzion/LibBSON.jl?branch=master)
 
 [libbson](https://github.com/mongodb/libbson) bindings for [The Julia Language](http://julialang.org/)
