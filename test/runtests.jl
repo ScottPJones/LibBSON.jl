@@ -85,3 +85,8 @@ facts("BSONObject: get!") do
     @fact get!(bsonObject, "foo", true) --> true
     @fact get!(bsonObject, "foo", true) --> true
 end
+
+facts("BSONError") do
+    err = BSONError()
+    @fact typeof(string(err)) <: AbstractString --> true
+end
