@@ -28,7 +28,7 @@ type BSONArray
             buffer, data, length
             ) || error("bson_init_static: failure")
         b = Compat.unsafe_convert(Ptr{Void}, buffer)
-        new(b, (_ref_, b))
+        new(b, (_ref_, buffer))
     end
 
     BSONArray(_wrap_::Ptr{Void}, _ref_::Any) = new(_wrap_, _ref_)

@@ -11,7 +11,7 @@ immutable BSONOID
             C_NULL
             )
             r = Compat.unsafe_convert(Ptr{UInt8}, buffer)
-        new(r, r)
+        new(r, buffer)
     end
 
     BSONOID(str::AbstractString) = begin
@@ -33,7 +33,7 @@ immutable BSONOID
             cstr
             )
             r = Compat.unsafe_convert(Ptr{UInt8}, buffer)
-        new(r, r)
+        new(r, buffer)
     end
 
     BSONOID(_wrap_::Ptr{Void}, _ref_::Any) = new(_wrap_, _ref_)

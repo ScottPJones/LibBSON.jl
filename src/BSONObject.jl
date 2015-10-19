@@ -44,7 +44,7 @@ type BSONObject
             buffer, data, length
             ) || error("bson_init_static: failure")
         b = Compat.unsafe_convert(Ptr{Void}, buffer)
-        new(b, (_ref_, b))
+        new(b, (_ref_, buffer))
     end
 
     BSONObject(_wrap_::Ptr{Void}, _owner_::Any) = new(_wrap_, _owner_)
