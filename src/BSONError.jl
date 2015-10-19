@@ -22,7 +22,7 @@ convert(::Type{AbstractString}, bsonError::BSONError) = begin
 end
 export convert
 
-string(bsonError::BSONError) = convert(AbstractString, bsonError)
+string(bsonError::BSONError) = bytestring(bsonError._wrap_)
 export string
 
 error(bsonError::BSONError) = error(string(bsonError))
