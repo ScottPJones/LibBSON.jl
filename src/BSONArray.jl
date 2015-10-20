@@ -87,6 +87,19 @@ function append(bsonArray::BSONArray, val::Real)
         val
         ) || error("libBSON: overflow")
 end
+using Base.Dates: datetime2unix
+function append(bsonArray::BSONArray, val::Union{Date,DateTime})
+    keyCStr = bytestring(string(length(bsonArray)))
+    ts = typeof(val) == Date ? datetime2unix(DateTime(val)) : datetime2unix(val)
+    ccall(
+        (:bson_append_date_time, libbson),
+        Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Clong),
+        bsonArray._wrap_,
+        keyCStr,
+        length(keyCStr),
+        ts
+        ) || error("libBSON: overflow")
+end
 function append(bsonArray::BSONArray, val::BSONArray)
     keyCStr = bytestring(string(length(bsonArray)))
     childBuffer = Array(UInt8, 128)

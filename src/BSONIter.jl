@@ -178,6 +178,13 @@ function value(bsonIter::BSONIter)
             Bool, (Ptr{UInt8}, ),
             bsonIter._wrap_
             )
+    elseif ty == BSON_TYPE_DATE_TIME
+        ts = ccall(
+            (:bson_iter_date_time, libbson),
+            Int64, (Ptr{UInt8}, ),
+            bsonIter._wrap_
+            )
+        return Dates.unix2datetime(ts)
     elseif ty == BSON_TYPE_NULL
         return nothing
     elseif ty == BSON_TYPE_MINKEY

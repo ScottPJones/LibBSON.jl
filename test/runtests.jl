@@ -41,6 +41,14 @@ facts("BSONObject") do
         @fact (bsonObject["oid"] == oid) --> true
     end
 
+    context("BSONObject with DateTime") do
+        ts = now()
+        d = Date()
+        obj = BSONObject(@compat Dict("time" => ts, "date" => d))
+        @fact obj["time"] --> ts
+        @fact obj["date"] --> d
+    end
+
     context("BSONObject from JSON") do
         @fact_throws BSONObject("invalid JSON")
         @fact string(BSONObject("{\"pi\": 3.141000}")) --> "{ \"pi\" : 3.141000 }"
@@ -77,6 +85,15 @@ facts("BSONArray") do
     bsonArray = BSONArray()
     append(bsonArray, BSONOID())
     @fact length(bsonArray) --> 1
+
+    context("Array of DateTimes") do
+      ts = now()
+      d = Date()
+      arr = BSONArray([d,ts])
+      @fact length(arr) --> 2
+      @fact arr[0] --> d
+      @fact arr[1] --> ts
+    end
 end
 
 facts("BSONObject: get!") do
