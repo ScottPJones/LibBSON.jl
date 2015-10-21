@@ -91,8 +91,11 @@ facts("BSONArray") do
       d = Date()
       arr = BSONArray([d,ts])
       @fact length(arr) --> 2
-      @fact arr[0] --> d
-      @fact arr[1] --> ts
+      @fact arr[1] --> d
+      @fact arr[2] --> ts
+      for i = 1:length(arr)
+        @fact typeof(arr[i]) <: DateTime --> true
+      end
     end
 end
 

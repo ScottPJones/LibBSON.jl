@@ -81,7 +81,7 @@ Base.getindex(bsonObject::BSONObject, key::AbstractString) = begin
 end
 
 Base.getindex(bsonArray::BSONArray, key::Integer) = begin
-    bsonIter = BSONIter(bsonArray, key)
+    bsonIter = BSONIter(bsonArray, key - 1)
     bsonIter.done && error("key not found: $(repr(key))")
     value(bsonIter)
 end
