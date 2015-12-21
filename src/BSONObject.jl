@@ -106,7 +106,7 @@ end
 using Base.Dates: datetime2unix
 function append(bsonObject::BSONObject, key::AbstractString, val::Union{Date,DateTime})
     keyCStr = bytestring(key)
-    ts = typeof(val) == Date ? datetime2unix(DateTime(val)) : datetime2unix(val)
+    ts = (typeof(val) == Date ? datetime2unix(DateTime(val)) : datetime2unix(val)) * 1000
     ccall(
         (:bson_append_date_time, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Clong),

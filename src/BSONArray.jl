@@ -90,7 +90,7 @@ end
 using Base.Dates: datetime2unix
 function append(bsonArray::BSONArray, val::Union{Date,DateTime})
     keyCStr = bytestring(string(length(bsonArray)))
-    ts = typeof(val) == Date ? datetime2unix(DateTime(val)) : datetime2unix(val)
+    ts = (typeof(val) == Date ? datetime2unix(DateTime(val)) : datetime2unix(val)) * 1000
     ccall(
         (:bson_append_date_time, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Clong),
