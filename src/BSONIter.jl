@@ -184,7 +184,7 @@ function value(bsonIter::BSONIter)
             Int64, (Ptr{UInt8}, ),
             bsonIter._wrap_
             )
-        return Dates.unix2datetime(ts)
+        return Dates.unix2datetime(ts / 1000)
     elseif ty == BSON_TYPE_NULL
         return nothing
     elseif ty == BSON_TYPE_MINKEY
