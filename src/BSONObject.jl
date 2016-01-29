@@ -191,7 +191,7 @@ function append(bsonObject::BSONObject, key::AbstractString, val::Symbol)
         append(bsonObject, key, string(val))
     end
 end
-function append(bsonObject::BSONObject, key::AbstractString, val::Dict)
+function append(bsonObject::BSONObject, key::AbstractString, val::Associative)
     keyCStr = bytestring(key)
     childBuffer = Array(UInt8, 128)
     ccall(

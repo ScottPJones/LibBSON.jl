@@ -1,4 +1,4 @@
-using FactCheck, LibBSON, Compat
+using FactCheck, LibBSON, Compat, DataStructures
 
 facts("BSONOID") do
     oid = BSONOID()
@@ -110,3 +110,8 @@ facts("BSONError") do
     err = BSONError()
     @fact typeof(string(err)) <: AbstractString --> true
 end
+
+facts("Issue 18") do
+    @fact string(BSONObject(OrderedDict("a" => OrderedDict("b" => "c")))) --> "{ \"a\" : { \"b\" : \"c\" } }"
+end
+
