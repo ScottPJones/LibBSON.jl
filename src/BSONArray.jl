@@ -185,7 +185,7 @@ function append(bsonArray::BSONArray, val::Symbol)
         append(bsonArray, string(val))
     end
 end
-function append(bsonArray::BSONArray, val::Dict)
+function append(bsonArray::BSONArray, val::Associative)
     keyCStr = bytestring(string(length(bsonArray)))
     childBuffer = Array(UInt8, 128)
     ccall(
