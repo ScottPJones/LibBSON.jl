@@ -23,4 +23,4 @@ provides(
     provides(Homebrew.HB, {"libbson" => libbson})
 end
 
-@BinDeps.install [:libbson => :libbson]
+@BinDeps.install Dict(:libbson => :libbson)
