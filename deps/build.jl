@@ -7,9 +7,9 @@ libbson = library_dependency(
     aliases = ["libbson", "libbson-1.0"]
     )
 
-provides(Sources, {
+provides(Sources, Dict(
     URI("http://github.com/mongodb/libbson/releases/download/1.0.0/libbson-1.0.0.tar.gz") => libbson
-    })
+    ))
 
 provides(
     BuildProcess,
