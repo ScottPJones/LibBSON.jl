@@ -23,4 +23,4 @@ provides(
     provides(Homebrew.HB, {"libbson" => libbson})
 end
 
-@BinDeps.load_dependencies [:libbson]
+@BinDeps.install [:libbson => :libbson]
