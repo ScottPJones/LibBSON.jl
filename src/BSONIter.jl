@@ -199,14 +199,14 @@ function value(bsonIter::BSONIter)
             C_NULL
             )))
     elseif ty == BSON_TYPE_OID
-        return BSONOID(
-            ccall(
+        data = Array(UInt8, 12)
+        ptr = ccall(
                 (:bson_iter_oid, libbson),
-                Ptr{Void}, (Ptr{UInt8},),
+                Ptr{UInt8}, (Ptr{UInt8},),
                 bsonIter._wrap_
-                ),
-            bsonIter
-            )
+                )
+        unsafe_copy!(pointer(data), ptr, 12)
+        return BSONOID(data)
     elseif ty == BSON_TYPE_DOCUMENT
         length = Array(UInt32, 1)
         data = Array(Ptr{UInt8}, 1)

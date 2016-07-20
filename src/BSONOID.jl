@@ -36,7 +36,7 @@ immutable BSONOID
         new(r, buffer)
     end
 
-    BSONOID(_wrap_::Ptr{Void}, _ref_::Any) = new(_wrap_, _ref_)
+    BSONOID(_ref_::Any) = new(pointer(_ref_), _ref_)
 end
 export BSONOID
 
