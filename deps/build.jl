@@ -20,7 +20,8 @@ provides(
             
 @osx_only begin
     using Homebrew
-    provides(Homebrew.HB, {"libbson" => libbson})
+    Homebrew.rm("libbson")
+    provides(Homebrew.HB, "mongo-c", libbson, os = :Darwin)
 end
 
 @BinDeps.install Dict(:libbson => :libbson)
