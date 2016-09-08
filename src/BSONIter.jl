@@ -149,7 +149,7 @@ function value_type(bsonIter::BSONIter)
         )
 end
 
-done(bsonIter::BSONIter) = bsonIter.isDone
+done(bsonIter::BSONIter) = bsonIter.done
 export done
 
 function value(bsonIter::BSONIter)
