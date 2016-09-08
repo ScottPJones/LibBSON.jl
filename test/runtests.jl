@@ -33,6 +33,17 @@ facts("BSONObject") do
     @fact bsonObject["int64"] --> -57
     append(bsonObject, "int32", 0x12345678)
     @fact bsonObject["int32"] --> 305419896
+    
+    context("BSONObject Copy Constructor") do
+        initialDict = Dict{Any,Any}("someText" => "hello")
+        bsonObject = BSONObject(@compat initialDict)
+        bsonObjectCopyBad  = bsonObject
+        bsonObjectCopyGood = BSONObject(bsonObject)
+        append(bsonObject, "someValue", -123.456)
+        @fact dict(bsonObject)          --> not(initialDict)
+        @fact dict(bsonObjectCopyBad)   --> not(initialDict)
+        @fact dict(bsonObjectCopyGood)  --> initialDict
+    end
 
     context("BSONObject with OID") do
         oid = BSONOID()
