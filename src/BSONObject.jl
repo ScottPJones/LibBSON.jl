@@ -11,6 +11,19 @@ type BSONObject
         finalizer(bsonObject, destroy)
         return bsonObject
     end
+    
+    BSONObject(other::BSONObject) = begin
+        _owner_ = Array{UInt8}(128)
+        ccall(
+                (:bson_copy_to, libbson),
+                Void, (Ptr{Void}, Ptr{UInt8}),
+                other._wrap_,
+                pointer(_owner_)
+        )
+        bsonObject = new(Ptr{Void}(pointer(_owner_)), _owner_)
+        finalizer(bsonObject, destroy)
+        return bsonObject
+    end
 
     BSONObject(dict::Associative) = begin
         bsonObject = BSONObject()
