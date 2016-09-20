@@ -2,6 +2,7 @@ language: julia
 notifications:
   email: peter.zion@gmail.com
 julia:
+    - 0.4
     - release
     - nightly
 before_install:
