@@ -15,7 +15,7 @@ immutable BSONOID
     end
 
     BSONOID(str::AbstractString) = begin
-        cstr = bytestring(str)
+        cstr = string(str)
 
         isValid = ccall(
             (:bson_oid_is_valid, libbson),
@@ -66,7 +66,7 @@ function convert(::Type{AbstractString}, oid::BSONOID)
         oid._wrap_,
         cstr
         )
-    return bytestring(Compat.unsafe_convert(Ptr{UInt8}, cstr))
+    return String(unsafe_string(Compat.unsafe_convert(Ptr{UInt8}, cstr)))
 end
 export convert
 

@@ -43,7 +43,7 @@ function convert(::Type{AbstractString}, bsonArray::BSONArray)
         C_NULL
         )
     cstr == C_NULL && return ""
-    result = bytestring(cstr)
+    result = unsafe_string(cstr)
     ccall(
         (:bson_free, libbson),
         Void, (Ptr{Void},),
@@ -66,7 +66,7 @@ length(bsonArray::BSONArray) =
         )
 
 function append(bsonArray::BSONArray, val::Bool)
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     ccall(
         (:bson_append_bool, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Bool),
@@ -77,7 +77,7 @@ function append(bsonArray::BSONArray, val::Bool)
         ) || error("libBSON: overflow")
 end
 function append(bsonArray::BSONArray, val::Real)
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     ccall(
         (:bson_append_double, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Cdouble),
@@ -89,7 +89,7 @@ function append(bsonArray::BSONArray, val::Real)
 end
 using Base.Dates: datetime2unix
 function append(bsonArray::BSONArray, val::Union{Date,DateTime})
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     ts = (typeof(val) == Date ? datetime2unix(DateTime(val)) : datetime2unix(val)) * 1000
     ccall(
         (:bson_append_date_time, libbson),
@@ -101,7 +101,7 @@ function append(bsonArray::BSONArray, val::Union{Date,DateTime})
         ) || error("libBSON: overflow")
 end
 function append(bsonArray::BSONArray, val::BSONArray)
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     childBuffer = Array(UInt8, 128)
     ccall(
         (:bson_append_array_begin, libbson),
@@ -123,7 +123,7 @@ function append(bsonArray::BSONArray, val::BSONArray)
         ) || error("bson_append_array_end: failure")
 end
 function append(bsonArray::BSONArray, val::Union{Int8, UInt8, Int16, UInt16, Int32, UInt32})
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     ccall(
         (:bson_append_int32, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Int32),
@@ -134,7 +134,7 @@ function append(bsonArray::BSONArray, val::Union{Int8, UInt8, Int16, UInt16, Int
         ) || error("libBSON: overflow")
 end
 function append(bsonArray::BSONArray, val::Union{Int64, UInt64})
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     ccall(
         (:bson_append_int64, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Int64),
@@ -145,7 +145,7 @@ function append(bsonArray::BSONArray, val::Union{Int64, UInt64})
         ) || error("libBSON: overflow")
 end
 function append(bsonArray::BSONArray, val::BSONOID)
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     ccall(
         (:bson_append_oid, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Ptr{UInt8}),
@@ -156,8 +156,8 @@ function append(bsonArray::BSONArray, val::BSONOID)
         ) || error("libBSON: overflow")
 end
 function append(bsonArray::BSONArray, val::AbstractString)
-    keyCStr = bytestring(string(length(bsonArray)))
-    valUTF8 = utf8(val)
+    keyCStr = string(length(bsonArray))
+    valUTF8 = String(val)
     ccall(
         (:bson_append_utf8, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Ptr{UInt8}, Cint),
@@ -167,9 +167,6 @@ function append(bsonArray::BSONArray, val::AbstractString)
         valUTF8,
         sizeof(valUTF8)
         ) || error("libBSON: overflow")
-end
-function append(bsonArray::BSONArray, val::Void)
-    append_null(bsonArray)
 end
 function append(bsonArray::BSONArray, val::Void)
     append_null(bsonArray)
@@ -186,7 +183,7 @@ function append(bsonArray::BSONArray, val::Symbol)
     end
 end
 function append(bsonArray::BSONArray, val::Associative)
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     childBuffer = Array(UInt8, 128)
     ccall(
         (:bson_append_document_begin, libbson),
@@ -208,7 +205,7 @@ function append(bsonArray::BSONArray, val::Associative)
         ) || error("bson_append_document_end: failure")
 end
 function append(bsonArray::BSONArray, val::Vector)
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     childBuffer = Array(UInt8, 128)
     ccall(
         (:bson_append_array_begin, libbson),
@@ -232,7 +229,7 @@ end
 export append
 
 function append_null(bsonArray::BSONArray)
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     ccall(
         (:bson_append_null, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint),
@@ -244,7 +241,7 @@ end
 export append_null
 
 function append_minkey(bsonArray::BSONArray)
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     ccall(
         (:bson_append_minkey, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint),
@@ -256,7 +253,7 @@ end
 export append_minkey
 
 function append_maxkey(bsonArray::BSONArray)
-    keyCStr = bytestring(string(length(bsonArray)))
+    keyCStr = string(length(bsonArray))
     ccall(
         (:bson_append_maxkey, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint),

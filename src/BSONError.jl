@@ -18,11 +18,11 @@ convert(::Type{AbstractString}, bsonError::BSONError) = begin
     uint32s = reinterpret(UInt32, bsonError._wrap_)
     domain = uint32s[1]
     code = uint32s[2]
-    return bytestring(convert(Ptr{UInt8}, bsonError._wrap_[9:end]))
+    return String(copy(convert(Ptr{UInt8}, bsonError._wrap_[9:end])))
 end
 export convert
 
-string(bsonError::BSONError) = bytestring(bsonError._wrap_)
+string(bsonError::BSONError) = String(copy(bsonError._wrap_))
 export string
 
 error(bsonError::BSONError) = error(string(bsonError))
