@@ -35,6 +35,10 @@ type BSONArray
 end
 export BSONArray
 
+if Base.VERSION > v"0.5.0-"
+Base.iteratoreltype(::Type{BSONArray}) = Base.EltypeUnknown()
+end
+
 function convert(::Type{AbstractString}, bsonArray::BSONArray)
     cstr = ccall(
         (:bson_array_as_json, libbson),
@@ -52,6 +56,10 @@ function convert(::Type{AbstractString}, bsonArray::BSONArray)
     return result
 end
 export convert
+
+convert(::Type{Array}, b::BSONArray) = collect(b)
+convert{T}(::Type{Array{T}}, b::BSONArray) = collect(T, b)
+convert{T}(::Type{Array{T,1}}, b::BSONArray) = collect(T, b)
 
 string(bsonArray::BSONArray) = convert(AbstractString, bsonArray)
 
