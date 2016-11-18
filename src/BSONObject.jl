@@ -117,17 +117,20 @@ function append(bsonObject::BSONObject, key::AbstractString, val::Real)
         ) || error("libBSON: overflow")
 end
 using Base.Dates: datetime2unix
-function append(bsonObject::BSONObject, key::AbstractString, val::Union{Date,DateTime})
+function append(bsonObject::BSONObject, key::AbstractString, val::DateTime)
     keyCStr = string(key)
-    ts = (typeof(val) == Date ? datetime2unix(DateTime(val)) : datetime2unix(val)) * 1000
+    ts = round(Int64, datetime2unix(val)*1000)
     ccall(
         (:bson_append_date_time, libbson),
-        Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Clong),
+        Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Clonglong),
         bsonObject._wrap_,
         keyCStr,
         length(keyCStr),
         ts
         ) || error("libBSON: overflow")
+end
+function append(bsonObject::BSONObject, key::AbstractString, val::Date)
+    append(bsonObject, key, DateTime(val))
 end
 function append(bsonObject::BSONObject, key::AbstractString, val::BSONObject)
     keyCStr = string(key)
