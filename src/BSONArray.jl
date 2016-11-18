@@ -90,7 +90,7 @@ end
 using Base.Dates: datetime2unix
 function append(bsonArray::BSONArray, val::DateTime)
     keyCStr = string(length(bsonArray))
-    ts = round(Int64, datetime2unix(val))*1000)
+    ts = round(Int64, datetime2unix(val)*1000)
     ccall(
         (:bson_append_date_time, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Clonglong),
