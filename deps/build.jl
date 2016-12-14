@@ -21,7 +21,7 @@ provides(
 @osx_only begin
     using Homebrew
     Homebrew.rm("libbson")
-    provides(Homebrew.HB, "mongo-c", libbson, os = :Darwin)
+    provides(Homebrew.HB, "mongo-c-driver", libbson, os = :Darwin)
 end
 
 @BinDeps.install Dict(:libbson => :libbson)
