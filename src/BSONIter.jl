@@ -236,7 +236,7 @@ function value(bsonIter::BSONIter)
             )
             @show length
             @show size(data)
-        return BSONData(data[1], length[1], bsonIter)
+        return BSONBinary(data[1], length[1], bsonIter)
     else
         error("unhandled BSONType $ty")
     end
