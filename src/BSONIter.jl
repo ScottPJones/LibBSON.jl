@@ -233,7 +233,7 @@ function value(bsonIter::BSONIter)
             Ptr{Void}, (Ptr{UInt8}, Ptr{Void}, Ptr{UInt32}, Ptr{Ptr{UInt8}}),
             bsonIter._wrap_, C_NULL, lengthPtr, dataPtr
             )
-        length = Int(lengthPtr[1]);
+        length = Int(lengthPtr[1])
         dataArray = Array(UInt8, length)
         unsafe_copy!(pointer(dataArray), dataPtr[1], length)
         return dataArray
