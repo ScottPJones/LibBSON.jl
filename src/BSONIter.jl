@@ -225,6 +225,18 @@ function value(bsonIter::BSONIter)
             bsonIter._wrap_, length, data
             )
         return BSONArray(data[1], length[1], bsonIter)
+    elseif ty == BSON_TYPE_BINARY
+        length = Array(UInt32, 1)
+        data = Array(Ptr{UInt8}, 1)
+        # BSON_SUBTYPE_BINARY
+        ccall(
+            (:bson_iter_binary, libbson),
+            Ptr{Void}, (Ptr{UInt8}, Ptr{Void}, Ptr{UInt32}, Ptr{Ptr{UInt8}}),
+            bsonIter._wrap_, C_NULL, length, data
+            )
+            @show length
+            @show size(data)
+        return BSONData(data[1], length[1], bsonIter)
     else
         error("unhandled BSONType $ty")
     end
