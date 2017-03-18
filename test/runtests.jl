@@ -10,6 +10,14 @@ facts("BSONOID") do
     @fact string(BSONOID("540b628bca2e9b0d4e7dfa61")) --> "540b628bca2e9b0d4e7dfa61"
 end
 
+facts("BSON Binary tests") do
+    testData = Array(UInt8, 100)
+    initialDict = Dict{Any,Any}("myBinaryData" => testData)
+    bsonObject = BSONObject(@compat initialDict)
+    @fact length(bsonObject) --> 1
+    @fact bsonObject["myBinaryData"] == testData --> true
+end
+
 facts("BSONObject") do
     bsonObject = BSONObject(@compat Dict{Any,Any}(
         "null"=>nothing,
@@ -33,7 +41,7 @@ facts("BSONObject") do
     @fact bsonObject["int64"] --> -57
     append(bsonObject, "int32", 0x12345678)
     @fact bsonObject["int32"] --> 305419896
-    
+
     context("BSONObject Copy Constructor") do
         initialDict = Dict{Any,Any}("someText" => "hello")
         bsonObject = BSONObject(@compat initialDict)
@@ -125,4 +133,3 @@ end
 facts("Issue 18") do
     @fact string(BSONObject(OrderedDict("a" => OrderedDict("b" => "c")))) --> "{ \"a\" : { \"b\" : \"c\" } }"
 end
-

@@ -11,7 +11,7 @@ type BSONObject
         finalizer(bsonObject, destroy)
         return bsonObject
     end
-    
+
     BSONObject(other::BSONObject) = begin
         _owner_ = Array{UInt8}(128)
         ccall(
@@ -226,6 +226,20 @@ function append(bsonObject::BSONObject, key::AbstractString, val::Associative)
         childBuffer
         ) || error("bson_append_document_end: failure")
 end
+function append(bsonObject::BSONObject, key::AbstractString, valBinary::Vector{UInt8})
+    keyCStr = string(key)
+    ccall(
+        (:bson_append_binary, libbson),
+        Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Cint, Ptr{UInt8}, Cint),
+        bsonObject._wrap_,
+        keyCStr,
+        length(keyCStr),
+        0, #BSON_SUBTYPE_BINARY
+        valBinary,
+        length(valBinary)
+        ) || error("libBSON: overflow")
+end
+
 function append(bsonObject::BSONObject, key::AbstractString, val::Vector)
     keyCStr = string(key)
     childBuffer = Array(UInt8, 128)
