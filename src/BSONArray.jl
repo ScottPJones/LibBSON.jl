@@ -26,8 +26,7 @@ type BSONArray
             (:bson_init_static, libbson),
             Bool, (Ptr{Void}, Ptr{UInt8}, UInt32),
             buffer, data, length
-            )
-        ret || error("bson_init_static: failure")
+            ) || error("bson_init_static: failure")
         b = Compat.unsafe_convert(Ptr{Void}, buffer)
         new(b, (_ref_, buffer))
     end
