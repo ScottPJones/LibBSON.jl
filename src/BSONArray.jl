@@ -22,13 +22,12 @@ type BSONArray
 
     BSONArray(data::Ptr{UInt8}, length::Integer, _ref_::Any) = begin
         buffer = Array(UInt8, 128)
-        @show length
-        @show ret = ccall(
+        ret = ccall(
             (:bson_init_static, libbson),
             Bool, (Ptr{Void}, Ptr{UInt8}, UInt32),
             buffer, data, length
             )
-            ret || error("bson_init_static: failure")
+        ret || error("bson_init_static: failure")
         b = Compat.unsafe_convert(Ptr{Void}, buffer)
         new(b, (_ref_, buffer))
     end
