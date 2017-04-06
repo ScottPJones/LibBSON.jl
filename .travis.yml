@@ -4,7 +4,7 @@ notifications:
 julia:
     - 0.4
     - release
-    - nightly
+#    - nightly
 before_install:
   - sudo apt-get update -qq -y
   - sudo apt-get install libpcre3-dev -y
