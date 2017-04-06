@@ -35,6 +35,7 @@ type BSONArray
 end
 export BSONArray
 
+
 if Base.VERSION > v"0.5.0-"
 Base.iteratoreltype(::Type{BSONArray}) = Base.EltypeUnknown()
 end
