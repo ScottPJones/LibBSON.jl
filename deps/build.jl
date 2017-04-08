@@ -18,7 +18,7 @@ provides(
     os = :Unix
     )
             
-@osx_only begin
+@static if is_apple()
     using Homebrew
     Homebrew.rm("libbson")
     provides(Homebrew.HB, "mongo-c-driver", libbson, os = :Darwin)
