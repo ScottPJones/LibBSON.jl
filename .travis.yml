@@ -3,7 +3,7 @@ notifications:
   email: peter.zion@gmail.com
 julia:
     - 0.4
-    - release
+    - 0.5
 #    - nightly
 before_install:
   - sudo apt-get update -qq -y
