@@ -3,7 +3,7 @@ type BSONIter
     done::Bool
 
     function BSONIter(bsonObject::BSONObject)
-        bsonIter = new(Array(UInt8, 128), false)
+        bsonIter = new(Array{UInt8}(128), false)
         ccall(
             (:bson_iter_init, libbson),
             Bool, (Ptr{UInt8}, Ptr{UInt8}),
@@ -19,7 +19,7 @@ type BSONIter
     end
 
     function BSONIter(bsonObject::BSONObject, key::AbstractString)
-        bsonIter = new(Array(UInt8, 128), false)
+        bsonIter = new(Array{UInt8}(128), false)
         ccall(
             (:bson_iter_init, libbson),
             Bool, (Ptr{UInt8}, Ptr{UInt8}),
@@ -37,7 +37,7 @@ type BSONIter
     end
 
     function BSONIter(bsonArray::BSONArray)
-        bsonIter = new(Array(UInt8, 128), false)
+        bsonIter = new(Array{UInt8}(128), false)
         ccall(
             (:bson_iter_init, libbson),
             Bool, (Ptr{UInt8}, Ptr{UInt8}),
@@ -53,7 +53,7 @@ type BSONIter
     end
 
     function BSONIter(bsonArray::BSONArray, key::Integer)
-        bsonIter = new(Array(UInt8, 128), false)
+        bsonIter = new(Array{UInt8}(128), false)
         ccall(
             (:bson_iter_init, libbson),
             Bool, (Ptr{UInt8}, Ptr{UInt8}),
@@ -199,7 +199,7 @@ function value(bsonIter::BSONIter)
             C_NULL
             )))
     elseif ty == BSON_TYPE_OID
-        data = Array(UInt8, 12)
+        data = Array{UInt8}(12)
         ptr = ccall(
                 (:bson_iter_oid, libbson),
                 Ptr{UInt8}, (Ptr{UInt8},),
@@ -208,8 +208,8 @@ function value(bsonIter::BSONIter)
         unsafe_copy!(pointer(data), ptr, 12)
         return BSONOID(data)
     elseif ty == BSON_TYPE_DOCUMENT
-        length = Array(UInt32, 1)
-        data = Array(Ptr{UInt8}, 1)
+        length = Array{UInt32}(1)
+        data = Array{Ptr{UInt8}}(1)
         ccall(
             (:bson_iter_document, libbson),
             Ptr{Void}, (Ptr{UInt8}, Ptr{UInt32}, Ptr{Ptr{UInt8}}),
@@ -217,8 +217,8 @@ function value(bsonIter::BSONIter)
             )
         return BSONObject(data[1], length[1], bsonIter)
     elseif ty == BSON_TYPE_ARRAY
-        length = Array(UInt32, 1)
-        data = Array(Ptr{UInt8}, 1)
+        length = Array{UInt32}(1)
+        data = Array{Ptr{UInt8}}(1)
         ccall(
             (:bson_iter_array, libbson),
             Ptr{Void}, (Ptr{UInt8}, Ptr{UInt32}, Ptr{Ptr{UInt8}}),
@@ -226,15 +226,15 @@ function value(bsonIter::BSONIter)
             )
         return BSONArray(data[1], length[1], bsonIter)
     elseif ty == BSON_TYPE_BINARY
-        lengthPtr = Array(UInt32, 1)
-        dataPtr = Array(Ptr{UInt8}, 1)
+        lengthPtr = Array{UInt32}(1)
+        dataPtr = Array{Ptr{UInt8}}(1)
         ccall(
             (:bson_iter_binary, libbson),
             Ptr{Void}, (Ptr{UInt8}, Ptr{Void}, Ptr{UInt32}, Ptr{Ptr{UInt8}}),
             bsonIter._wrap_, C_NULL, lengthPtr, dataPtr
             )
         length = Int(lengthPtr[1])
-        dataArray = Array(UInt8, length)
+        dataArray = Array{UInt8}(length)
         unsafe_copy!(pointer(dataArray), dataPtr[1], length)
         return dataArray
     else

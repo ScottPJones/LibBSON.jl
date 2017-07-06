@@ -28,7 +28,7 @@ Example Usage
         "oid" => BSONOID(),
         "minkey" => :minkey,
         "maxkey" => :maxkey,
-	      "binaryData" => Array(UInt8, 20),
+	      "binaryData" => Array{UInt8}(20),
         "array" => Any[5.41, false]
         ))
     println(bsonObject)

@@ -1,4 +1,4 @@
-typealias BSONType Int
+const BSONType = Int
 const BSON_TYPE_EOD = 0x00
 const BSON_TYPE_DOUBLE = 0x01
 const BSON_TYPE_UTF8 = 0x02

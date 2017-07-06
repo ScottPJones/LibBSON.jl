@@ -5,7 +5,7 @@ type BSONError
     _wrap_::Vector{UInt8}
 
     function BSONError()
-        return new(Array(UInt8, 512))
+        return new(Array{UInt8}(512))
     end
 end
 export BSONError

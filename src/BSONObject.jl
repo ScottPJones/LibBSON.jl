@@ -50,7 +50,7 @@ type BSONObject
     end
 
     BSONObject(data::Ptr{UInt8}, length::Integer, _ref_::Any) = begin
-        buffer = Array(UInt8, 128)
+        buffer = Array{UInt8}(128)
         ccall(
             (:bson_init_static, libbson),
             Bool, (Ptr{Void}, Ptr{UInt8}, UInt32),
@@ -206,7 +206,7 @@ function append(bsonObject::BSONObject, key::AbstractString, val::Symbol)
 end
 function append(bsonObject::BSONObject, key::AbstractString, val::Associative)
     keyCStr = string(key)
-    childBuffer = Array(UInt8, 128)
+    childBuffer = Array{UInt8}(128)
     ccall(
         (:bson_append_document_begin, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Ptr{Void}),
@@ -242,7 +242,7 @@ end
 
 function append(bsonObject::BSONObject, key::AbstractString, val::Vector)
     keyCStr = string(key)
-    childBuffer = Array(UInt8, 128)
+    childBuffer = Array{UInt8}(128)
     ccall(
         (:bson_append_array_begin, libbson),
         Bool, (Ptr{Void}, Ptr{UInt8}, Cint, Ptr{Void}),

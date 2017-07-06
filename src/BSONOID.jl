@@ -3,7 +3,7 @@ immutable BSONOID
     _ref_::Any
 
     BSONOID() = begin
-        buffer = Array(UInt8, 12)
+        buffer = Array{UInt8}(12)
         ccall(
             (:bson_oid_init, libbson),
             Void, (Ptr{UInt8}, Ptr{Void}),
@@ -25,7 +25,7 @@ immutable BSONOID
             )
         isValid || error("'" * str * "': not a valid BSONOID string")
 
-        buffer = Array(UInt8, 12)
+        buffer = Array{UInt8}(12)
         ccall(
             (:bson_oid_init_from_string, libbson),
             Void, (Ptr{UInt8}, Ptr{UInt8}),
@@ -59,7 +59,7 @@ hash(oid::BSONOID, h::UInt) = hash(
 export hash
 
 function convert(::Type{AbstractString}, oid::BSONOID)
-    cstr = Array(UInt8, 25)
+    cstr = Array{UInt8}(25)
     ccall(
         (:bson_oid_to_string, libbson),
         Void, (Ptr{UInt8}, Ptr{UInt8}),
