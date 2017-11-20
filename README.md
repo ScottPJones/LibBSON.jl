@@ -1,3 +1,9 @@
+IMPORTANT: Looking for New Maintainer
+-------------------------------------
+
+Note that we are looking for a new maintainer for the LibBSON.jl package.  If you are interested in taking over maintenance of LibBSON.jl please contact peter dot zion at gmail dot com.
+
+
 LibBSON.jl
 ==========
 
