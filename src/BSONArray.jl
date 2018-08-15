@@ -1,8 +1,9 @@
-type BSONArray
+
+mutable struct BSONArray
     _wrap_::Ptr{Void}
     _ref_::Any
 
-    BSONArray() = begin
+    function BSONArray()
         _wrap_ = ccall(
             (:bson_new, libbson),
             Ptr{Void}, ()
@@ -12,7 +13,7 @@ type BSONArray
         return bsonArray
     end
 
-    BSONArray(vec::Vector) = begin
+    function BSONArray(vec::Vector)
         bsonArray = BSONArray()
         for ele in vec
             append(bsonArray, ele)
@@ -20,14 +21,14 @@ type BSONArray
         return bsonArray
     end
 
-    BSONArray(data::Ptr{UInt8}, length::Integer, _ref_::Any) = begin
+    function BSONArray(data::Ptr{UInt8}, length::Integer, _ref_::Any)
         buffer = Array{UInt8}(128)
         ccall(
             (:bson_init_static, libbson),
             Bool, (Ptr{Void}, Ptr{UInt8}, UInt32),
             buffer, data, length
             ) || error("bson_init_static: failure")
-        b = Compat.unsafe_convert(Ptr{Void}, buffer)
+        b = Base.unsafe_convert(Ptr{Void}, buffer)
         new(b, (_ref_, buffer))
     end
 
@@ -35,12 +36,9 @@ type BSONArray
 end
 export BSONArray
 
-
-if Base.VERSION > v"0.5.0-"
 Base.iteratoreltype(::Type{BSONArray}) = Base.EltypeUnknown()
-end
 
-function convert(::Type{AbstractString}, bsonArray::BSONArray)
+function Base.convert(::Type{AbstractString}, bsonArray::BSONArray)
     cstr = ccall(
         (:bson_array_as_json, libbson),
         Ptr{UInt8}, (Ptr{Void}, Ptr{UInt8}),
@@ -56,18 +54,16 @@ function convert(::Type{AbstractString}, bsonArray::BSONArray)
         )
     return result
 end
-export convert
 
-convert(::Type{Array}, b::BSONArray) = collect(b)
-convert{T}(::Type{Array{T}}, b::BSONArray) = collect(T, b)
-convert{T}(::Type{Array{T,1}}, b::BSONArray) = collect(T, b)
+Base.convert(::Type{Array}, b::BSONArray) = collect(b)
+Base.convert{T}(::Type{Array{T}}, b::BSONArray) = collect(T, b)
+Base.convert{T}(::Type{Array{T,1}}, b::BSONArray) = collect(T, b)
 
-string(bsonArray::BSONArray) = convert(AbstractString, bsonArray)
+Base.string(bsonArray::BSONArray) = convert(AbstractString, bsonArray)
 
-show(io::IO, bsonArray::BSONArray) = print(io, "BSONArray($(convert(AbstractString, bsonArray)))")
-export show
+Base.show(io::IO, bsonArray::BSONArray) = print(io, "BSONArray($(convert(AbstractString, bsonArray)))")
 
-length(bsonArray::BSONArray) =
+Base.length(bsonArray::BSONArray) =
     ccall(
         (:bson_count_keys, libbson),
         UInt32, (Ptr{Void},),
@@ -123,7 +119,7 @@ function append(bsonArray::BSONArray, val::BSONArray)
         length(keyCStr),
         childBuffer
         ) || error("bson_append_array_begin: failure")
-    childBSONArray = BSONArray(Compat.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
+    childBSONArray = BSONArray(Base.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
     for element in val
         append(childBSONArray, element)
     end
@@ -205,7 +201,7 @@ function append(bsonArray::BSONArray, val::Associative)
         length(keyCStr),
         childBuffer
         ) || error("bson_append_document_begin: failure")
-    childBSONObject = BSONObject(Compat.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
+    childBSONObject = BSONObject(Base.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
     for (k, v) in val
         append(childBSONObject, k, v)
     end
@@ -227,7 +223,7 @@ function append(bsonArray::BSONArray, val::Vector)
         length(keyCStr),
         childBuffer
         ) || error("bson_append_array_begin: failure")
-    childBSONArray = BSONArray(Compat.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
+    childBSONArray = BSONArray(Base.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
     for element in val
         append(childBSONArray, element)
     end

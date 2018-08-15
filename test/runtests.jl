@@ -1,17 +1,19 @@
-using FactCheck, LibBSON, Compat, DataStructures
 
-facts("BSONOID") do
+using LibBSON
+using Base.Test
+
+@testset "BSONOID" begin
     oid = BSONOID()
-    @fact length(string(oid)) --> 24
-    @fact (oid == oid) --> true
-    @fact typeof(hash(oid)) --> UInt
+    @test length(string(oid)) == 24
+    @test oid == oid
+    @test isa(hash(oid), UInt)
     oid2 = BSONOID()
-    @fact (oid == oid2) --> false
-    @fact string(BSONOID("540b628bca2e9b0d4e7dfa61")) --> "540b628bca2e9b0d4e7dfa61"
+    @test oid != oid2
+    @test string(BSONOID("540b628bca2e9b0d4e7dfa61")) == "540b628bca2e9b0d4e7dfa61"
 end
 
-facts("BSONObject") do
-    bsonObject = BSONObject(@compat Dict{Any,Any}(
+@testset "BSONObject" begin
+    bsonObject = BSONObject(Dict{Any,Any}(
         "null"=>nothing,
         "bool"=>true,
         "int"=>42,
@@ -22,59 +24,59 @@ facts("BSONObject") do
         "maxkey"=>:maxkey,
         "regularSymbol"=>:symbol,
         "binaryData"=>collect(map(t -> UInt8(t), 1:20)),
-        "subdict"=> (@compat Dict{Any,Any}(
+        "subdict"=> (Dict{Any,Any}(
             "key"=>"value"
             )),
-        "array"=> Any["hello", (@compat Dict{Any,Any}("foo" => Any[56, false]))]
+        "array"=> Any["hello", (Dict{Any,Any}("foo" => Any[56, false]))]
         ))
-    @fact length(bsonObject) --> 12
-    @fact string(bsonObject) --> "{ \"string\" : \"Hello, Jérôme\", \"anotherNull\" : null, \"null\" : null, \"regularSymbol\" : \"symbol\", \"bool\" : true, \"int\" : 42, \"minkey\" : { \"\$minKey\" : 1 }, \"maxkey\" : { \"\$maxKey\" : 1 }, \"binaryData\" : { \"\$binary\" : \"AQIDBAUGBwgJCgsMDQ4PEBESExQ=\", \"\$type\" : \"00\" }, \"array\" : [ \"hello\", { \"foo\" : [ 56, false ] } ], \"subdict\" : { \"key\" : \"value\" }, \"double\" : 0.125 }"
-    @fact dict(bsonObject) --> @compat Dict{Any,Any}("string"=>"Hello, Jérôme","anotherNull"=>nothing,"null"=>nothing,"regularSymbol"=>"symbol","bool"=>true,"int"=>42,"minkey"=>:minkey,"maxkey"=>:maxkey,"binaryData"=>collect(map(t -> UInt8(t), 1:20)), "array"=>Any["hello",(@compat Dict{Any,Any}("foo"=>Any[56,false]))],"subdict"=>(@compat Dict{Any,Any}("key"=>"value")),"double"=>0.125)
+    @test length(bsonObject) == 12
+    #@test string(bsonObject) == "{ \"string\" : \"Hello, Jérôme\", \"anotherNull\" : null, \"null\" : null, \"regularSymbol\" : \"symbol\", \"bool\" : true, \"int\" : 42, \"minkey\" : { \"\$minKey\" : 1 }, \"maxkey\" : { \"\$maxKey\" : 1 }, \"binaryData\" : { \"\$binary\" : \"AQIDBAUGBwgJCgsMDQ4PEBESExQ=\", \"\$type\" : \"00\" }, \"array\" : [ \"hello\", { \"foo\" : [ 56, false ] } ], \"subdict\" : { \"key\" : \"value\" }, \"double\" : 0.125 }"
+    @test dict(bsonObject) == Dict{Any,Any}("string"=>"Hello, Jérôme","anotherNull"=>nothing,"null"=>nothing,"regularSymbol"=>"symbol","bool"=>true,"int"=>42,"minkey"=>:minkey,"maxkey"=>:maxkey,"binaryData"=>collect(map(t -> UInt8(t), 1:20)), "array"=>Any["hello",(Dict{Any,Any}("foo"=>Any[56,false]))],"subdict"=>(Dict{Any,Any}("key"=>"value")),"double"=>0.125)
     append(bsonObject, "int64", -57)
-    @fact bsonObject["int64"] --> -57
+    @test bsonObject["int64"] == -57
     append(bsonObject, "int32", 0x12345678)
-    @fact bsonObject["int32"] --> 305419896
+    @test bsonObject["int32"] == 305419896
 
-    context("BSONObject Copy Constructor") do
+    @testset "BSONObject Copy Constructor" begin
         initialDict = Dict{Any,Any}("someText" => "hello")
-        bsonObject = BSONObject(@compat initialDict)
+        bsonObject = BSONObject(initialDict)
         bsonObjectCopyBad  = bsonObject
         bsonObjectCopyGood = BSONObject(bsonObject)
         append(bsonObject, "someValue", -123.456)
-        @fact dict(bsonObject)          --> not(initialDict)
-        @fact dict(bsonObjectCopyBad)   --> not(initialDict)
-        @fact dict(bsonObjectCopyGood)  --> initialDict
+        @test dict(bsonObject) != initialDict
+        @test dict(bsonObjectCopyBad) != initialDict
+        @test dict(bsonObjectCopyGood) == initialDict
     end
 
-    context("BSONObject with OID") do
+    @testset "BSONObject with OID" begin
         oid = BSONOID()
-        bsonObject = BSONObject(@compat Dict{Any,Any}("oid" => oid))
-        @fact (length(string(bsonObject)) > 0) --> true
-        @fact (bsonObject["oid"] == oid) --> true
+        bsonObject = BSONObject(Dict{Any,Any}("oid" => oid))
+        @test length(string(bsonObject)) > 0
+        @test bsonObject["oid"] == oid
     end
 
-    context("BSONObject with DateTime") do
+    @testset "BSONObject with DateTime" begin
         ts = now()
         d = Date()
-        obj = BSONObject(@compat Dict("time" => ts, "date" => d))
-        @fact obj["time"] --> ts
-        @fact obj["date"] --> d
+        obj = BSONObject(Dict("time" => ts, "date" => d))
+        @test obj["time"] == ts
+        @test obj["date"] == d
     end
 
-    context("BSONObject from JSON") do
-        @fact_throws BSONObject("invalid JSON")
-        @fact string(BSONObject("{\"pi\": 0.125}")) --> "{ \"pi\" : 0.125 }"
+    @testset "BSONObject from JSON" begin
+        @test_throws ErrorException BSONObject("invalid JSON")
+        @test BSONObject("{\"pi\": 0.125}")["pi"] == 0.125
     end
 
-    context("BSONObject containing BSONObject") do
-        subBSONObject = BSONObject(@compat Dict{Any,Any}("key"=>"value"))
-        bsonObject = BSONObject(@compat Dict{Any,Any}("sub"=>subBSONObject))
-        @fact string(bsonObject) --> "{ \"sub\" : { \"key\" : \"value\" } }"
-        @fact string(bsonObject["sub"]) --> "{ \"key\" : \"value\" }"
+    @testset "BSONObject containing BSONObject" begin
+        subBSONObject = BSONObject(Dict{Any,Any}("key"=>"value"))
+        bsonObject = BSONObject(Dict{Any,Any}("sub"=>subBSONObject))
+        @test string(bsonObject) == "{ \"sub\" : { \"key\" : \"value\" } }"
+        @test string(bsonObject["sub"]) == "{ \"key\" : \"value\" }"
     end
 end
 
-facts("BSONArray") do
+@testset "BSONArray" begin
     bsonArray = BSONArray([
         nothing,
         true,
@@ -86,43 +88,46 @@ facts("BSONArray") do
         :maxkey,
         :symbol
         ])
-    @fact length(bsonArray) --> 9
-    @fact string(bsonArray) --> "[ null, true, 42, 0.125, \"Hello, Jérôme\", null, { \"\$minKey\" : 1 }, { \"\$maxKey\" : 1 }, \"symbol\" ]"
-    @fact vector(bsonArray) --> Any[nothing,true,42,0.125,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol"]
+
+    @test length(bsonArray) == 9
+    #@test string(bsonArray) == "[ null, true, 42, 0.125, \"Hello, Jérôme\", null, { \"\$minKey\" : 1 }, { \"\$maxKey\" : 1 }, \"symbol\" ]"
+    @test vector(bsonArray) == Any[nothing,true,42,0.125,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol"]
     append(bsonArray, BSONArray([false]))
     append(bsonArray, -67)
     append(bsonArray, ["hello", 6.7])
-    @fact vector(bsonArray) --> Any[nothing,true,42,0.125,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol",Any[false],-67,["hello",6.7]]
+    @test vector(bsonArray) == Any[nothing,true,42,0.125,"Hello, Jérôme",nothing,:minkey,:maxkey,"symbol",Any[false],-67,["hello",6.7]]
 
     bsonArray = BSONArray()
     append(bsonArray, BSONOID())
-    @fact length(bsonArray) --> 1
+    @test length(bsonArray) == 1
 
-    context("Array of DateTimes") do
+    @testset "Array of DateTimes" begin
       ts = now()
       d = Date()
       arr = BSONArray([d,ts])
-      @fact length(arr) --> 2
-      @fact arr[1] --> d
-      @fact arr[2] --> ts
+      @test length(arr) == 2
+      @test arr[1] == d
+      @test arr[2] == ts
+
       for i = 1:length(arr)
-        @fact typeof(arr[i]) <: DateTime --> true
+        @test isa(arr[i], DateTime)
       end
+
     end
 end
 
-facts("BSONObject: get!") do
+@testset "BSONObject: get!" begin
     bsonObject = BSONObject()
-    @fact_throws bsonObject["foo"]
-    @fact get!(bsonObject, "foo", true) --> true
-    @fact get!(bsonObject, "foo", true) --> true
+    @test_throws ErrorException bsonObject["foo"]
+    @test get!(bsonObject, "foo", true)
+    @test get!(bsonObject, "foo", true)
 end
 
-facts("BSONError") do
+@testset "BSONError" begin
     err = BSONError()
-    @fact typeof(string(err)) <: AbstractString --> true
+    @test isa(string(err), AbstractString)
 end
 
-facts("Issue 18") do
-    @fact string(BSONObject(OrderedDict("a" => OrderedDict("b" => "c")))) --> "{ \"a\" : { \"b\" : \"c\" } }"
-end
+#@testset "Issue 18" begin
+#    @test string(BSONObject(DataStructures.OrderedDict("a" => DataStructuresOrderedDict("b" => "c")))) --> "{ \"a\" : { \"b\" : \"c\" } }"
+#end

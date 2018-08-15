@@ -1,8 +1,9 @@
-type BSONObject
+
+mutable struct BSONObject
     _wrap_::Ptr{Void}
     _owner_::Any
 
-    BSONObject() = begin
+    function BSONObject()
         _wrap_ = ccall(
             (:bson_new, libbson),
             Ptr{Void}, ()
@@ -12,7 +13,7 @@ type BSONObject
         return bsonObject
     end
 
-    BSONObject(other::BSONObject) = begin
+    function BSONObject(other::BSONObject)
         _owner_ = Array{UInt8}(128)
         ccall(
                 (:bson_copy_to, libbson),
@@ -25,7 +26,7 @@ type BSONObject
         return bsonObject
     end
 
-    BSONObject(dict::Associative) = begin
+    function BSONObject(dict::Associative)
         bsonObject = BSONObject()
         for (k, v) in dict
             append(bsonObject, k, v)
@@ -33,7 +34,7 @@ type BSONObject
         return bsonObject
     end
 
-    BSONObject(jsonString::AbstractString) = begin
+    function BSONObject(jsonString::AbstractString)
         jsonCStr = string(jsonString)
         bsonError = BSONError()
         _wrap_ = ccall(
@@ -49,14 +50,14 @@ type BSONObject
         return bsonObject
     end
 
-    BSONObject(data::Ptr{UInt8}, length::Integer, _ref_::Any) = begin
+    function BSONObject(data::Ptr{UInt8}, length::Integer, _ref_::Any)
         buffer = Array{UInt8}(128)
         ccall(
             (:bson_init_static, libbson),
             Bool, (Ptr{Void}, Ptr{UInt8}, UInt32),
             buffer, data, length
             ) || error("bson_init_static: failure")
-        b = Compat.unsafe_convert(Ptr{Void}, buffer)
+        b = Base.unsafe_convert(Ptr{Void}, buffer)
         new(b, (_ref_, buffer))
     end
 
@@ -64,7 +65,7 @@ type BSONObject
 end
 export BSONObject
 
-function convert(::Type{AbstractString}, bsonObject::BSONObject)
+function Base.convert(::Type{AbstractString}, bsonObject::BSONObject)
     cstr = ccall(
         (:bson_as_json, libbson),
         Ptr{UInt8}, (Ptr{Void}, Ptr{UInt8}),
@@ -79,20 +80,17 @@ function convert(::Type{AbstractString}, bsonObject::BSONObject)
         )
     return result
 end
-export convert
 
-string(bsonObject::BSONObject) = convert(AbstractString, bsonObject)
+Base.string(bsonObject::BSONObject) = convert(AbstractString, bsonObject)
 
-show(io::IO, bsonObject::BSONObject) = print(io, "BSONObject($(convert(AbstractString, bsonObject)))")
-export show
+Base.show(io::IO, bsonObject::BSONObject) = print(io, "BSONObject($(convert(AbstractString, bsonObject)))")
 
-length(bsonObject::BSONObject) =
+Base.length(bsonObject::BSONObject) =
     ccall(
         (:bson_count_keys, libbson),
         UInt32, (Ptr{Void},),
         bsonObject._wrap_
         )
-export length
 
 function append(bsonObject::BSONObject, key::AbstractString, val::Bool)
     keyCStr = string(key)
@@ -215,7 +213,7 @@ function append(bsonObject::BSONObject, key::AbstractString, val::Associative)
         length(keyCStr),
         childBuffer
         ) || error("bson_append_document_begin: failure")
-    childBSON = BSONObject(Compat.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
+    childBSON = BSONObject(Base.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
     for (k, v) in val
         append(childBSON, k, v)
     end
@@ -251,7 +249,7 @@ function append(bsonObject::BSONObject, key::AbstractString, val::Vector)
         length(keyCStr),
         childBuffer
         ) || error("bson_append_array_begin: failure")
-    childBSONArray = BSONArray(Compat.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
+    childBSONArray = BSONArray(Base.unsafe_convert(Ptr{Void}, childBuffer), childBuffer)
     for element in val
         append(childBSONArray, element)
     end
@@ -300,7 +298,7 @@ function append_maxkey(bsonObject::BSONObject, key::AbstractString)
 end
 export append_maxkey
 
-dict(bsonObject::BSONObject) = begin
+function dict(bsonObject::BSONObject)
     d = Dict{Any, Any}()
     for (k, v) in bsonObject
         if isa(v, BSONObject)

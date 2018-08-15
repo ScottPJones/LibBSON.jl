@@ -1,4 +1,5 @@
-type BSONIter
+
+mutable struct BSONIter
     _wrap_::Vector{UInt8}
     done::Bool
 
@@ -74,13 +75,13 @@ export BSONIter
 
 # Index
 
-Base.getindex(bsonObject::BSONObject, key::AbstractString) = begin
+function Base.getindex(bsonObject::BSONObject, key::AbstractString)
     bsonIter = BSONIter(bsonObject, key)
     bsonIter.done && error("key not found: $(repr(key))")
     value(bsonIter)
 end
 
-Base.getindex(bsonArray::BSONArray, key::Integer) = begin
+function Base.getindex(bsonArray::BSONArray, key::Integer)
     bsonIter = BSONIter(bsonArray, key - 1)
     bsonIter.done && error("key not found: $(repr(key))")
     value(bsonIter)
@@ -88,7 +89,7 @@ end
 
 # Associative collection
 
-Base.get!(bsonObject::BSONObject, key::AbstractString, default) = begin
+function Base.get!(bsonObject::BSONObject, key::AbstractString, default)
     iter = BSONIter(bsonObject, key)
     iter.done || return value(iter)
     append(bsonObject, key, default)
@@ -97,35 +98,17 @@ end
 
 # Iterator
 
-start(bsonObject::BSONObject) = begin
-    return BSONIter(bsonObject)
-end
-export start
+Base.start(bsonObject::BSONObject) = BSONIter(bsonObject)
 
-next(bsonObject::BSONObject, bsonIter::BSONIter) = begin
-    ((key(bsonIter), value(bsonIter)), next!(bsonIter))
-end
-export next
+Base.next(bsonObject::BSONObject, bsonIter::BSONIter) = ((key(bsonIter), value(bsonIter)), next!(bsonIter))
 
-done(bsonObject::BSONObject, bsonIter::BSONIter) = begin
-    bsonIter.done
-end
-export done
+Base.done(bsonObject::BSONObject, bsonIter::BSONIter) = bsonIter.done
 
-start(bsonArray::BSONArray) = begin
-    return BSONIter(bsonArray)
-end
-export start
+Base.start(bsonArray::BSONArray) = BSONIter(bsonArray)
 
-next(bsonArray::BSONArray, bsonIter::BSONIter) = begin
-    (value(bsonIter), next!(bsonIter))
-end
-export next
+Base.next(bsonArray::BSONArray, bsonIter::BSONIter) = (value(bsonIter), next!(bsonIter))
 
-done(bsonArray::BSONArray, bsonIter::BSONIter) = begin
-    bsonIter.done
-end
-export done
+Base.done(bsonArray::BSONArray, bsonIter::BSONIter) = bsonIter.done
 
 # Private
 
@@ -149,8 +132,7 @@ function value_type(bsonIter::BSONIter)
         )
 end
 
-done(bsonIter::BSONIter) = bsonIter.done
-export done
+Base.done(bsonIter::BSONIter) = bsonIter.done
 
 function value(bsonIter::BSONIter)
     ty = value_type(bsonIter)

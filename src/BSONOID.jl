@@ -1,8 +1,9 @@
-immutable BSONOID
+
+struct BSONOID
     _wrap_::Ptr{Void}
     _ref_::Any
 
-    BSONOID() = begin
+    function BSONOID()
         buffer = Array{UInt8}(12)
         ccall(
             (:bson_oid_init, libbson),
@@ -10,11 +11,11 @@ immutable BSONOID
             buffer,
             C_NULL
             )
-            r = Compat.unsafe_convert(Ptr{UInt8}, buffer)
+            r = Base.unsafe_convert(Ptr{UInt8}, buffer)
         new(r, buffer)
     end
 
-    BSONOID(str::AbstractString) = begin
+    function BSONOID(str::AbstractString)
         cstr = string(str)
 
         isValid = ccall(
@@ -32,7 +33,7 @@ immutable BSONOID
             buffer,
             cstr
             )
-            r = Compat.unsafe_convert(Ptr{UInt8}, buffer)
+            r = Base.unsafe_convert(Ptr{UInt8}, buffer)
         new(r, buffer)
     end
 
@@ -40,15 +41,14 @@ immutable BSONOID
 end
 export BSONOID
 
-import Base.==
-==(lhs::BSONOID, rhs::BSONOID) = ccall(
+Base.:(==)(lhs::BSONOID, rhs::BSONOID) = ccall(
     (:bson_oid_equal, libbson),
     Bool, (Ptr{Void}, Ptr{Void}),
     lhs._wrap_, rhs._wrap_
     )
-export ==
 
-hash(oid::BSONOID, h::UInt) = hash(
+
+Base.hash(oid::BSONOID, h::UInt) = hash(
     ccall(
         (:bson_oid_hash, libbson),
         UInt32, (Ptr{UInt8},),
@@ -56,9 +56,8 @@ hash(oid::BSONOID, h::UInt) = hash(
         ),
     h
     )
-export hash
 
-function convert(::Type{AbstractString}, oid::BSONOID)
+function Base.convert(::Type{AbstractString}, oid::BSONOID)
     cstr = Array{UInt8}(25)
     ccall(
         (:bson_oid_to_string, libbson),
@@ -66,12 +65,9 @@ function convert(::Type{AbstractString}, oid::BSONOID)
         oid._wrap_,
         cstr
         )
-    return String(unsafe_string(Compat.unsafe_convert(Ptr{UInt8}, cstr)))
+    return String(unsafe_string(Base.unsafe_convert(Ptr{UInt8}, cstr)))
 end
-export convert
 
-string(oid::BSONOID) = convert(AbstractString, oid)
-export string
+Base.string(oid::BSONOID) = convert(AbstractString, oid)
 
-show(io::IO, oid::BSONOID) = print(io, "BSONOID($(convert(AbstractString, oid)))")
-export show
+Base.show(io::IO, oid::BSONOID) = print(io, "BSONOID($(convert(AbstractString, oid)))")
