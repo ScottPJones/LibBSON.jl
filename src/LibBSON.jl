@@ -1,25 +1,21 @@
+
+__precompile__(true)
 module LibBSON
 
-using Compat
-
-include( "../deps/deps.jl")
+const deps_script = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
+if !isfile(deps_script)
+    error("LibBSON.jl is not installed properly, run Pkg.build(\"LibBSON\") and restart Julia.")
+end
+include(deps_script)
+check_deps()
 
 LIBBSON_VERSION = VersionNumber(
     ccall((:bson_get_major_version, libbson), Cint, ()),
     ccall((:bson_get_minor_version, libbson), Cint, ()),
     ccall((:bson_get_micro_version, libbson), Cint, ()),
-    )
-export LIBBSON_VERSION
+)
 
-import Base.hash,
-    Base.convert,
-    Base.show,
-    Base.error,
-    Base.start,
-    Base.next,
-    Base.done,
-    Base.string,
-    Base.length
+export LIBBSON_VERSION
 
 include("BSONOID.jl")
 include("BSONError.jl")

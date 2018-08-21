@@ -1,1 +1,9 @@
-*.cov
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+/deps/build.log
+/deps/deps.jl
+/deps/usr/
+/docs/build/
+/docs/site/
+/docs/out.xml
