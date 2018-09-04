@@ -1,6 +1,11 @@
 
 using LibBSON
-using Base.Test
+@static if VERSION < v"0.7-"
+    using Base.Test
+else
+    using Test
+    using Dates
+end
 
 @testset "BSONOID" begin
     oid = BSONOID()

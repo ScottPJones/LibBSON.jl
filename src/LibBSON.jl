@@ -1,6 +1,21 @@
-
 __precompile__(true)
+
 module LibBSON
+
+@static if VERSION < v"0.7-"
+    const Nothing = Void
+    const Cvoid   = Void
+    const AbstractDict = Associative
+    const unsafe_copyto! = unsafe_copy!
+    finalizer(f::Function, o) = Base.finalizer(o, f)
+end
+@static VERSION < v"0.7-" ? (using Base.Dates) : (using Dates)
+alloc_buf(n) = @static VERSION < v"0.7-" ? Vector{UInt8}(n) : Vector{UInt8}(undef, n)
+
+const VoidPtr = Ptr{Cvoid}
+const BytePtr = Ptr{UInt8}
+
+@noinline bson_ovf() = error("libBSON: overflow")
 
 const deps_script = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
 if !isfile(deps_script)

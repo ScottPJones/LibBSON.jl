@@ -2,9 +2,7 @@
 struct BSONError
     _wrap_::Vector{UInt8}
 
-    function BSONError()
-        return new(Array{UInt8}(512))
-    end
+    BSONError() = new(alloc_buf(512))
 end
 
 export BSONError
